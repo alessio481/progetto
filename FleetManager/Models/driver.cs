@@ -1,30 +1,40 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace FleetManager.Models
 {
     public class Driver
     {
-        public int id {get;set;}
+        // Chiave primaria per la tabella Drivers
+        [Key]
+        public int DriverID { get; set; }
+
+        // FK verso Utenti (ogni Driver ?anche un Utente registrato nel sistema)
         [Required]
-        public string FirstName{get;set;} =string.Empty;
+        public int UtenteID { get; set; }
 
-        [Required]
-        [StringLength(50)]
-        public string LastName{get;set;} =string.Empty;
+        // Navigation property verso l'utente collegato
+        public Utente Utente { get; set; }
 
-        [Required]
-        [EmailAddress]
-        [StringLength(100)]
-        public string Email{get;set;}=string.Empty;
-
-        [Phone]
-        [StringLength(20)]
-        public string? Phone {get;set;}
-
+        // Numero della patente del driver
         [Required]
         [StringLength(30)]
-        public string LicenseNumber {get;set;} = string.Empty;
+        public string LicenseNumber { get; set; } = string.Empty;
 
-        public DateTime HireDate {get;set;} = DateTime.Now; 
+        // Telefono opzionale
+        [Phone]
+        [StringLength(20)]
+        public string? Phone { get; set; }
+
+        // Data di assunzione del driver
+        public DateTime HireDate { get; set; } = DateTime.Now;
+
+        // Eventuale data di scadenza patente (opzionale ma utile)
+        public DateTime? LicenseExpiration { get; set; }
+
+        // Altre note
+        [StringLength(200)]
+        public string? Note { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;    
+using System.ComponentModel.DataAnnotations; 
 
 namespace FleetManager.Models
 {
@@ -21,7 +21,7 @@ namespace FleetManager.Models
         [StringLength(250)]
         public string? Notes { get; set; }
 
-        public Vehicle vehicle {get;set;} = null!;
+        public Veicolo vehicle {get;set;} = null!;
         public Driver Driver {get;set;} = null!;
         
     }

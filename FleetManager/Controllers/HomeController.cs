@@ -1,24 +1,35 @@
-using System.Diagnostics;
+using FleetManager.Data;
 using FleetManager.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace FleetManager.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly AppDbContext _context;
 
-        public HomeController(ILogger<HomeController> logger)
+        // unire due ctor
+        public HomeController(ILogger<HomeController> logger, AppDbContext context)
         {
             _logger = logger;
+            _context = context;
         }
 
         public IActionResult Index()
         {
-            return View();
+            // Crea e passa il modello alla vista
+            var dashboardData = new DashboardData();
+            return View(dashboardData);
         }
 
         public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        public IActionResult RoleSelection()
         {
             return View();
         }
