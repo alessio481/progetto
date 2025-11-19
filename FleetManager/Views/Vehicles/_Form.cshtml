@@ -1,0 +1,37 @@
+@model FleetManager.Models.Vehicle
+<div class="mb-3">
+    <label asp-for="Targa" class="form-label"></label>
+    <input asp-for="Targa" class="form-control" />
+    <span asp-validation-for="Targa" class="text-danger"></span>
+</div>
+<div class="mb-3">
+    <label asp-for="Marca" class="form-label"></label>
+    <input asp-for="Marca" class="form-control" />
+    <span asp-validation-for="Marca" class="text-danger"></span>
+</div>
+<div class="mb-3">
+    <label asp-for="Modello" class="form-label"></label>
+    <input asp-for="Modello" class="form-control" />
+    <span asp-validation-for="Modello" class="text-danger"></span>
+</div>
+<div class="mb-3">
+    <label asp-for="Tipo" class="form-label"></label>
+    <input asp-for="Tipo" class="form-control" />
+    <span asp-validation-for="Tipo" class="text-danger"></span>
+</div>
+<div class="mb-3">
+    <label asp-for="DataImmatricolazione" class="form-label"></label>
+    <input asp-for="DataImmatricolazione" class="form-control" />
+</div>
+<div class="mb-3">
+    <label asp-for="Stato" class="form-label"></label>
+    <select asp-for="Stato" class="form-select" asp-items="Html.GetEnumSelectList< FleetManager.Models.VehicleStatus>()"></select>
+</div>
+<div class="mb-3">
+    <label asp-for="KmAttuali" class="form-label"></label>
+    <input asp-for="KmAttuali" class="form-control" />
+</div>
+<div class="mb-3">
+    <label asp-for="Note" class="form-label"></label>
+    <textarea asp-for="Note" class="form-control"></textarea>
+</div>

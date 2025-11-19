@@ -1,0 +1,31 @@
+@model FleetManager.Models.Assignment
+@{
+    ViewData["Title"] = "Nuova assegnazione";
+}
+
+<h2>Nuova assegnazione</h2>
+<hr />
+<form asp-action="Create">
+    <div class="mb-3">
+        <label asp-for="VehicleId" class="form-label"></label>
+        <select asp-for="VehicleId" class="form-select" asp-items="ViewBag.Vehicles"></select>
+    </div>
+    <div class="mb-3">
+        <label asp-for="DriverId" class="form-label"></label>
+        <select asp-for="DriverId" class="form-select" asp-items="ViewBag.Drivers"></select>
+    </div>
+    <div class="mb-3">
+        <label asp-for="DataInizio" class="form-label"></label>
+        <input asp-for="DataInizio" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="DataFinePrevista" class="form-label"></label>
+        <input asp-for="DataFinePrevista" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="Note" class="form-label"></label>
+        <textarea asp-for="Note" class="form-control"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Salva</button>
+    <a class="btn btn-secondary" asp-action="Index">Annulla</a>
+</form>

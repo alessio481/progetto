@@ -1,22 +1,12 @@
-﻿namespace FleetManager.Models
+namespace FleetManager.Models
 {
     public class DashboardData
     {
-        // Dati riepilogativi della flotta vuoto perché è un progetto vuoto
-        public int VeicoliTotali { get; set; } = 0;           // numero totale di veicoli
-        public int VeicoliDisponibili { get; set; } = 0;      // veicoli disponibili
-        public int VeicoliInUso { get; set; } = 0;            // veicoli in uso
-        public int VeicoliInManutenzione { get; set; } = 0;   // veicoli in manutenzione
-
-        // lista vuoto di manutenzioni recenti
-        public List<ManutenzioneRecente> ManutenzioniRecenti { get; set; } = new List<ManutenzioneRecente>();
-    }
-
-    public class ManutenzioneRecente
-    {
-        public DateTime Data { get; set; }
-        public string Descrizione { get; set; }
-        public string Targa { get; set; }
-        public decimal Costo { get; set; }
+        public int VeicoliTotali { get; set; }
+        public int VeicoliDisponibili { get; set; }
+        public int VeicoliAssegnati { get; set; }
+        public int VeicoliInManutenzione { get; set; }
+        public int AssegnazioniAperte { get; set; }
+        public List<Assignment> UltimeAssegnazioni { get; set; } = new();
     }
 }
