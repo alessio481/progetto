@@ -1,355 +1,89 @@
-﻿@{
-    ViewData["Title"] = "Home";
+@model FleetManager.Models.DashboardData
+@{
+    ViewData["Title"] = "Dashboard";
 }
-<style>
-    /* Selettore banner più specifico */
-    #promotionalBanner.promotional-banner {
-        width: 100vw !important;
-        position: relative !important;
-        left: 50% !important;
-        right: 50% !important;
-        margin-left: -50vw !important;
-        margin-right: -50vw !important;
-        background-color: #e3f2fd !important;
-        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
-        z-index: 1030 !important;
-    }
 
-    /* Stili contenuto banner */
-    #promotionalBanner .banner-content {
-        font-size: 0.875rem !important;
-        color: #1976d2 !important;
-        font-weight: 500 !important;
-    }
-
-    /* Assicurarsi che il banner non influisca sul layout */
-    #promotionalBanner {
-        box-sizing: border-box !important;
-    }
-</style>
-<!-- Banner -->
-<div class="promotional-banner container-fluid py-2 mb-4" id="promotionalBanner">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-md-8 text-center text-md-start">
-                <span class="fw-bold" style="font-size: 0.875rem; color: #1976d2;">DOWNLOAD GRATUITO:</span>
-                <span class="ms-2" style="font-size: 0.875rem; color: #1976d2;">CREA ALLINEAMENTO NELLA TUA FLOTTA</span>
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted">Veicoli totali</div>
+                <div class="display-6 fw-bold">@Model.VeicoliTotali</div>
             </div>
-            <div class="col-md-4 text-center text-md-end mt-1 mt-md-0">
-                <div class="d-flex justify-content-end align-items-center">
-                    <a href="#" class="btn btn-outline-primary btn-sm fw-bold me-2">
-                        <i class="bi bi-download"></i> Scarica Ora
-                    </a>
-                    <button type="button" class="btn-close" aria-label="Chiudi" onclick="closeBanner()"></button>
-                </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted">Disponibili</div>
+                <div class="display-6 fw-bold">@Model.VeicoliDisponibili</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted">Assegnati</div>
+                <div class="display-6 fw-bold">@Model.VeicoliAssegnati</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted">In manutenzione</div>
+                <div class="display-6 fw-bold">@Model.VeicoliInManutenzione</div>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-    function closeBanner() {
-        const banner = document.getElementById('promotionalBanner');
-        banner.style.display = 'none';
-        localStorage.setItem('bannerClosed', 'true');
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        if (localStorage.getItem('bannerClosed') === 'true') {
-            document.getElementById('promotionalBanner').style.display = 'none';
+<div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Ultime assegnazioni (@Model.AssegnazioniAperte in corso)</span>
+        <a class="btn btn-sm btn-primary" asp-controller="Assignments" asp-action="Create">Nuova assegnazione</a>
+    </div>
+    <div class="card-body">
+        @if (!Model.UltimeAssegnazioni.Any())
+        {
+            <p class="text-muted mb-0">Nessuna assegnazione registrata.</p>
         }
-    });
-</script>
-
-@if (User.Identity.IsAuthenticated)
-{
-    <!-- Utente autenticato: mostra dashboard -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="display-6">
-                        <i class="bi bi-speedometer2"></i> Dashboard Flotta
-                    </h1>
-                    <p class="lead">Panoramica della gestione della flotta aziendale</p>
-                </div>
-                <div>
-                    <span class="me-3 text-muted">Ciao, @User.Identity.Name!</span>
-                    <a href="@Url.Action("Logout", "Account")" class="btn btn-outline-danger btn-sm">
-                        <i class="bi bi-box-arrow-right"></i> Logout
-                    </a>
-                </div>
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Veicolo</th>
+                            <th>Autista</th>
+                            <th>Data inizio</th>
+                            <th>Data fine</th>
+                            <th>Stato</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.UltimeAssegnazioni)
+                        {
+                            <tr>
+                                <td>@item.Vehicle?.Targa</td>
+                                <td>@item.Driver?.Nome @item.Driver?.Cognome</td>
+                                <td>@item.DataInizio.ToString("dd/MM/yyyy")</td>
+                                <td>@item.DataFineEffettiva?.ToString("dd/MM/yyyy") ?? "-"</td>
+                                <td>
+                                    @if (item.InCorso)
+                                    {
+                                        <span class="badge bg-success">Assegnato</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Concluso</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
-
-            @if (User.IsInRole("Admin"))
-            {
-                <div class="alert alert-warning">
-                    <i class="bi bi-shield-check"></i> Sei loggato come <strong>Amministratore</strong>
-                </div>
-            }
-            else
-            {
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle"></i> Benvenuto! Inizia aggiungendo i primi veicoli alla tua flotta.
-                </div>
-            }
-        </div>
+        }
     </div>
-
-    <div class="row mb-4">
-        <div class="col-md-3 mb-3">
-            <div class="card text-white bg-primary">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">0</h4>
-                            <p class="card-text">Veicoli Totali</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="bi bi-car-front fs-1"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3 mb-3">
-            <div class="card text-white bg-success">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">0</h4>
-                            <p class="card-text">Disponibili</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="bi bi-check-circle fs-1"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3 mb-3">
-            <div class="card text-white bg-warning">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">0</h4>
-                            <p class="card-text">In Uso</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="bi bi-clock fs-1"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3 mb-3">
-            <div class="card text-white bg-danger">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">0</h4>
-                            <p class="card-text">In Manutenzione</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="bi bi-tools fs-1"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-lightning"></i> Azioni Rapide
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2 d-md-block">
-                        <a class="btn btn-primary me-2 mb-2" asp-controller="Veicoli" asp-action="Create">
-                            <i class="bi bi-plus-circle"></i> Nuovo Veicolo
-                        </a>
-                        <a class="btn btn-success me-2 mb-2" asp-controller="Manutenzione" asp-action="Create">
-                            <i class="bi bi-tools"></i> Nuova Manutenzione
-                        </a>
-                        <a class="btn btn-info me-2 mb-2" asp-controller="Veicoli" asp-action="Index">
-                            <i class="bi bi-list-ul"></i> Elenco Veicoli
-                        </a>
-                    </div>
-
-                    @if (User.IsInRole("Admin"))
-                    {
-                        <hr>
-                        <div class="d-grid gap-2 d-md-block">
-                            <a class="btn btn-warning me-2 mb-2" href="#">
-                                <i class="bi bi-people"></i> Gestione Utenti
-                            </a>
-                            <a class="btn btn-dark me-2 mb-2" href="#">
-                                <i class="bi bi-gear"></i> Impostazioni Sistema
-                            </a>
-                        </div>
-                    }
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-clock-history"></i> Manutenzioni Recenti
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="text-center py-3">
-                        <i class="bi bi-inbox fs-1 text-muted"></i>
-                        <p class="text-muted mt-2">Nessuna manutenzione registrata</p>
-                        <small class="text-muted">Le manutenzioni appariranno qui dopo essere state aggiunte</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-}
-else
-{
-    <!-- Utente non autenticato: mostra pagina di marketing -->
-    <!-- Sezione Hero - Nuova aggiunta per pagina non loggata -->
-    <div class="row mb-5">
-        <div class="col-12 text-center">
-            <h1 class="display-4 fw-bold text-primary mb-3">
-                <i class="bi bi-car-front"></i> Fleet Management System
-            </h1>
-            <p class="lead fs-4 mb-4">Gestione intelligente della flotta aziendale</p>
-            <p class="mb-4">Monitora, gestisci e ottimizza l'utilizzo dei veicoli aziendali in un'unica piattaforma</p>
-            <div class="d-flex justify-content-center gap-3 flex-wrap">
-                <a href="@Url.Action("Register", "Account")" class="btn btn-primary btn-lg">
-                    <i class="bi bi-rocket-takeoff"></i> Inizia Ora
-                </a>
-                <a href="#" class="btn btn-outline-primary btn-lg">
-                    <i class="bi bi-play-circle"></i> Guarda Demo
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Sezione Funzionalità Principali -->
-    <div class="row mb-5">
-        <div class="col-12 text-center mb-4">
-            <h2 class="fw-bold">Funzionalità Principali</h2>
-            <p class="text-muted">Tutto ciò di cui hai bisogno per una gestione efficiente della flotta</p>
-        </div>
-
-        <!-- Funzionalità 1: Tracking Veicoli -->
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <div class="mb-3">
-                        <i class="bi bi-geo-alt fs-1 text-primary"></i>
-                    </div>
-                    <h5 class="card-title">Tracking in Tempo Reale</h5>
-                    <p class="card-text">Monitora la posizione e lo stato di ogni veicolo in tempo reale</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Funzionalità 2: Manutenzione -->
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <div class="mb-3">
-                        <i class="bi bi-tools fs-1 text-success"></i>
-                    </div>
-                    <h5 class="card-title">Gestione Manutenzione</h5>
-                    <p class="card-text">Pianifica e traccia la manutenzione per massimizzare l'efficienza</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Funzionalità 3: Analisi Costi -->
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <div class="mb-3">
-                        <i class="bi bi-graph-up fs-1 text-info"></i>
-                    </div>
-                    <h5 class="card-title">Analisi Costi</h5>
-                    <p class="card-text">Report dettagliati per ottimizzare i costi operativi</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Sezione Vantaggi -->
-    <div class="row mb-5">
-        <div class="col-12 text-center mb-4">
-            <h2 class="fw-bold">Vantaggi per la Tua Azienda</h2>
-        </div>
-
-        <div class="col-md-6 mb-3">
-            <div class="d-flex align-items-start">
-                <i class="bi bi-arrow-down-circle text-success fs-4 me-3 mt-1"></i>
-                <div>
-                    <h5>Riduzione dei Costi</h5>
-                    <p class="text-muted">Fino al 30% di risparmio sui costi di gestione della flotta</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 mb-3">
-            <div class="d-flex align-items-start">
-                <i class="bi bi-speedometer2 text-primary fs-4 me-3 mt-1"></i>
-                <div>
-                    <h5>Aumento Efficienza</h5>
-                    <p class="text-muted">Ottimizzazione dell'utilizzo veicoli fino all'85%</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 mb-3">
-            <div class="d-flex align-items-start">
-                <i class="bi bi-shield-check text-warning fs-4 me-3 mt-1"></i>
-                <div>
-                    <h5>Maggiore Sicurezza</h5>
-                    <p class="text-muted">Monitoraggio continuo e manutenzione preventiva</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 mb-3">
-            <div class="d-flex align-items-start">
-                <i class="bi bi-graph-up-arrow text-info fs-4 me-3 mt-1"></i>
-                <div>
-                    <h5>Decisioni Informate</h5>
-                    <p class="text-muted">Dati analitici per prendere decisioni strategiche</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Sezione Call to Action -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card bg-light">
-                <div class="card-body text-center py-5">
-                    <h3 class="card-title mb-3">Pronto a trasformare la gestione della tua flotta?</h3>
-                    <p class="card-text mb-4">Unisciti a centinaia di aziende che già utilizzano la nostra piattaforma</p>
-                    <div class="d-flex justify-content-center gap-3 flex-wrap">
-                        <a href="@Url.Action("Register", "Account")" class="btn btn-primary btn-lg">
-                            <i class="bi bi-person-plus"></i> Registrati Gratis
-                        </a>
-                        <a href="@Url.Action("Login", "Account")" class="btn btn-outline-primary btn-lg">
-                            <i class="bi bi-box-arrow-in-right"></i> Accedi
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-}
+</div>

@@ -1,6 +1,7 @@
 using FleetManager.Data;
 using FleetManager.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
 namespace FleetManager.Controllers
@@ -10,26 +11,36 @@ namespace FleetManager.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly AppDbContext _context;
 
-        // unire due ctor
         public HomeController(ILogger<HomeController> logger, AppDbContext context)
         {
             _logger = logger;
             _context = context;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            // Crea e passa il modello alla vista
-            var dashboardData = new DashboardData();
-            return View(dashboardData);
+            var veicoli = await _context.Vehicles.ToListAsync();
+            var assignments = await _context.Assignments
+                .Include(a => a.Vehicle)
+                .Include(a => a.Driver)
+                .OrderByDescending(a => a.DataInizio)
+                .Take(5)
+                .ToListAsync();
+
+            var dashboard = new DashboardData
+            {
+                VeicoliTotali = veicoli.Count,
+                VeicoliDisponibili = veicoli.Count(v => v.Stato == VehicleStatus.Disponibile),
+                VeicoliAssegnati = veicoli.Count(v => v.Stato == VehicleStatus.Assegnato),
+                VeicoliInManutenzione = veicoli.Count(v => v.Stato == VehicleStatus.Manutenzione),
+                AssegnazioniAperte = assignments.Count(a => a.InCorso),
+                UltimeAssegnazioni = assignments
+            };
+
+            return View(dashboard);
         }
 
         public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        public IActionResult RoleSelection()
         {
             return View();
         }

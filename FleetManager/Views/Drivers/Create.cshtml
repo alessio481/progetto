@@ -1,0 +1,16 @@
+@model FleetManager.Models.Driver
+@{
+    ViewData["Title"] = "Nuovo autista";
+}
+
+<h2>Nuovo autista</h2>
+<hr />
+<form asp-action="Create">
+    <partial name="_Form" />
+    <button type="submit" class="btn btn-primary">Salva</button>
+    <a class="btn btn-secondary" asp-action="Index">Annulla</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

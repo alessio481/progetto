@@ -1,0 +1,13 @@
+@model FleetManager.Models.Vehicle
+@{
+    ViewData["Title"] = "Elimina veicolo";
+}
+
+<h2>Conferma eliminazione</h2>
+<div class="alert alert-warning">Sei sicuro di voler eliminare il veicolo @Model.Targa?</div>
+
+<form asp-action="Delete">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Elimina</button>
+    <a class="btn btn-secondary" asp-action="Index">Annulla</a>
+</form>

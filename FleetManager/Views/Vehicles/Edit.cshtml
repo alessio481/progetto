@@ -1,0 +1,17 @@
+@model FleetManager.Models.Vehicle
+@{
+    ViewData["Title"] = "Modifica veicolo";
+}
+
+<h2>Modifica veicolo</h2>
+<hr />
+<form asp-action="Edit">
+    <input type="hidden" asp-for="Id" />
+    <partial name="_Form" />
+    <button type="submit" class="btn btn-primary">Aggiorna</button>
+    <a class="btn btn-secondary" asp-action="Index">Annulla</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
