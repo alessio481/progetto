@@ -11,5 +11,5 @@ public class Prenotazione
     public Utente Utente { get; set; }
 
     public DateTime OraPrenotazione { get; set; }
-    public DateTime OraRilascio { get; set; } // quando finisce
+    public DateTime? OraRilascio { get; set; } // quando finisce
 }
