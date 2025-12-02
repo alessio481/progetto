@@ -1,0 +1,166 @@
+﻿<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selezione Ruolo - Fleet Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .role-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            overflow: hidden;
+            background: white;
+        }
+
+            .role-card:hover {
+                transform: translateY(-10px);
+                box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            }
+
+        .role-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #3498db;
+        }
+
+        .feature-list {
+            text-align: left;
+            margin-top: 20px;
+        }
+
+            .feature-list li {
+                margin-bottom: 10px;
+                display: flex;
+                align-items: flex-start;
+            }
+
+            .feature-list i {
+                margin-right: 10px;
+                margin-top: 3px;
+                flex-shrink: 0;
+            }
+
+        .btn-role {
+            padding: 12px 30px;
+            font-weight: 600;
+            border-radius: 50px;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .admin-card {
+            border-top: 5px solid #3498db;
+        }
+
+        .user-card {
+            border-top: 5px solid #2ecc71;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-transparent">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">
+                <i class="bi bi-car-front me-2"></i>FleetManager
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="#"><i class="bi bi-question-circle me-1"></i> Aiuto</a>
+                <a class="nav-link" href="#"><i class="bi bi-telephone me-1"></i> Supporto</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container flex-grow-1 d-flex align-items-center justify-content-center py-5">
+        <div class="row w-100">
+            <div class="col-12 text-center mb-5">
+                <h1 class="text-white fw-bold display-4 mb-3">Seleziona la tua interfaccia operativa</h1>
+                <p class="text-white-50 lead">Scegli il pannello più adatto alle tue esigenze</p>
+            </div>
+
+            <div class="col-lg-6 mb-4">
+                <div class="role-card admin-card h-100 p-4">
+                    <div class="text-center">
+                        <div class="role-icon">
+                            <i class="bi bi-person-gear"></i>
+                        </div>
+                        <h3 class="fw-bold mb-3">Pannello Amministratore</h3>
+                        <p class="text-muted mb-4">Gestione completa del sistema, monitoraggio di tutti i veicoli, approvazione richieste e gestione utenti</p>
+                    </div>
+
+                    <ul class="feature-list list-unstyled">
+                        <li><i class="bi bi-check-circle text-success"></i> Gestione completa veicoli</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Monitoraggio posizioni in tempo reale</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Approvazione richieste veicoli</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Gestione manutenzione e costi</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Report e statistiche dettagliate</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Gestione utenti e permessi</li>
+                    </ul>
+
+                    <div class="text-center mt-4">
+                        <a href="admin-dashboard.html" class="btn btn-primary btn-role">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Accedi all'Interfaccia Amministratore
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 mb-4">
+                <div class="role-card user-card h-100 p-4">
+                    <div class="text-center">
+                        <div class="role-icon">
+                            <i class="bi bi-person"></i>
+                        </div>
+                        <h3 class="fw-bold mb-3">Area di Lavoro Utente</h3>
+                        <p class="text-muted mb-4">Richiesta veicoli, visualizzazione dei propri veicoli assegnati, segnalazione problemi e consultazione cronologia</p>
+                    </div>
+
+                    <ul class="feature-list list-unstyled">
+                        <li><i class="bi bi-check-circle text-success"></i> Visualizzazione veicoli assegnati</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Richiesta veicoli per utilizzo</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Segnalazione problemi e guasti</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Cronologia utilizzi e costi</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Stato richieste in tempo reale</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Accesso a documenti e policy</li>
+                    </ul>
+
+                    <div class="text-center mt-4">
+                        <a href="user-dashboard.html" class="btn btn-outline-success btn-role">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Accedi all'Interfaccia Utente
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 text-center mt-4">
+                <div class="alert alert-info d-inline-block">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Suggerimento:</strong> In base ai tuoi permessi, puoi scegliere l'interfaccia operativa più adatta
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark bg-opacity-50 text-white py-3 mt-auto">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2024 FleetManager. Tutti i diritti riservati.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

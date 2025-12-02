@@ -1,0 +1,90 @@
+﻿@using FleetManager.Models
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model Veicolo
+
+@{
+    ViewData["Title"] = "Nuovo Veicolo";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">
+                    <i class="bi bi-plus-circle"></i> @ViewData["Title"]
+                </h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" class="needs-validation" novalidate>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Targa" class="form-label">Targa *</label>
+                            <input asp-for="Targa" class="form-control" required />
+                            <span asp-validation-for="Targa" class="text-danger"></span>
+                            <div class="invalid-feedback">
+                                Inserire la targa del veicolo.
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Marca" class="form-label">Marca *</label>
+                            <input asp-for="Marca" class="form-control" required />
+                            <span asp-validation-for="Marca" class="text-danger"></span>
+                            <div class="invalid-feedback">
+                                Inserire la marca del veicolo.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Modello" class="form-label">Modello *</label>
+                            <input asp-for="Modello" class="form-control" required />
+                            <span asp-validation-for="Modello" class="text-danger"></span>
+                            <div class="invalid-feedback">
+                                Inserire il modello del veicolo.
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Stato" class="form-label">Stato</label>
+                            <select asp-for="Stato" class="form-select">
+                                <option value="Disponibile">Disponibile</option>
+                                <option value="InUso">In Uso</option>
+                                <option value="Manutenzione">Manutenzione</option>
+                            </select>
+                            <span asp-validation-for="Stato" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="DataRegistrazione" class="form-label">Data Registrazione</label>
+                            <input asp-for="DataRegistrazione" type="date" class="form-control" />
+                            <span asp-validation-for="DataRegistrazione" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Annulla
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Crea Veicolo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
