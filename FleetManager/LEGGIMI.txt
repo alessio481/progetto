@@ -1,0 +1,93 @@
+﻿appena si entra per fare un pull e fare un Update-Database nella console di gestione dei pacchetti
+se si fanno modifiche interne al database bisogna fare add-migration sempre nella stessa console
+
+
+
+
+Questa dovrebbe essere la struttura finale del progetto:
+
+FleetManager/
+├── Controllers/
+│   ├── HomeController.cs
+│   ├── VeicoliController.cs
+│   ├── UtentiController.cs
+│   ├── PrenotazioniController.cs
+│   ├── ManutenzioniController.cs
+│   ├── SegnalazioniController.cs
+│   ├── DashboardController.cs
+│   └── DebugController.cs
+│
+├── Models/
+│   ├── Utente.cs
+│   ├── Veicolo.cs
+│   ├── Prenotazione.cs
+│   ├── Manutenzione.cs
+│   ├── Segnalazione.cs
+│   ├── DashboardSnapshot.cs
+│   └── ViewModels/
+│       ├── DashboardViewModel.cs
+│       ├── DettaglioVeicoloViewModel.cs
+│       └── PrenotazioneFormViewModel.cs
+│
+├── ApplicationDbContext.cs
+│
+├── Services/
+│   ├── IVeicoloService.cs
+│   ├── VeicoloService.cs
+│   ├── IPrenotazioneService.cs
+│   ├── PrenotazioneService.cs
+│   ├── IManutenzioneService.cs
+│   ├── ManutenzioneService.cs
+│   ├── ISegnalazioneService.cs
+│   ├── SegnalazioneService.cs
+│   └── IDashboardService.cs
+│       └── DashboardService.cs
+│
+├── Repositories/
+│   ├── IVeicoloRepository.cs
+│   ├── VeicoloRepository.cs
+│   ├── IUtenteRepository.cs
+│   ├── UtenteRepository.cs
+│   ├── IPrenotazioneRepository.cs
+│   ├── PrenotazioneRepository.cs
+│   ├── IManutenzioneRepository.cs
+│   ├── ManutenzioneRepository.cs
+│   ├── ISegnalazioneRepository.cs
+│   └── SegnalazioneRepository.cs
+│
+├── Views/
+│   ├── Shared/
+│   ├── Home/
+│   ├── Veicoli/
+│   ├── Utenti/
+│   ├── Prenotazioni/
+│   ├── Manutenzioni/
+│   ├── Segnalazioni/
+│   └── Dashboard/
+│
+├── Migrations/
+│   └── (…) tutte le migration EF Core
+│
+└── wwwroot/
+    ├── css/
+    ├── js/
+    └── img/
+    
+
+
+e come funziona di base?
+
+I Controllers gestiscono le richieste HTTP, coordinano l’interazione tra utente 
+e applicazione, chiamano i servizi e restituiscono le viste. I Models rappresentano
+le entità del database come utenti, veicoli, prenotazioni, manutenzioni, segnalazioni
+e snapshot per la dashboard includono anche ViewModels usati per combinare più dati
+in una singola pagina. I Services contengono la logica applicativa come controlli di
+disponibilità, regole di prenotazione, gestione degli stati dei veicoli e calcoli
+per le statistiche. I Repositories sono lo strato che comunica con il database
+tramite Entity Framework Core e gestiscono query, salvataggi e letture dei dati.
+La cartella Data contiene l’ApplicationDbContext che definisce le tabelle, le
+relazioni e la connessione al database. Le Views sono le pagine Razor che
+visualizzano i dati suddivise per funzionalità come
+veicoli, utenti, prenotazioni, manutenzioni, segnalazioni e dashboard.
+La cartella wwwroot contiene file statici come css, javascript, immagini e
+librerie per il frontend.
