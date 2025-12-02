@@ -12,20 +12,10 @@ namespace FleetManager.Controllers
             _context = context;
         }
 
-        public IActionResult ciao() // Pagina/Debug/ciao
-        {
-            return Content("ciao");
-        }
-        public IActionResult Index() //Prova debug. Prima di andare a Pagina/Debug vedere di avere dati sul db
-        {
-            var veicoli = _context.Veicoli.ToList();
-            return View(veicoli);
-        }
-
         public IActionResult InserisciTantiDati()
         {
             // ================================
-            // 1) UTENTI            DA ELIMINARE dopo aver fatto l'update del server sql  
+            // 1) UTENTI            DA ELIMINARE dopo aver creato una migrazione e fattto l'update 
             // ================================
 
             var utenti = new List<Utente>
