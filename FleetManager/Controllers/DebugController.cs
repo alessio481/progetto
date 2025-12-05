@@ -124,5 +124,12 @@ namespace FleetManager.Controllers
 
             return Content("📌 Dati COMPLETI inseriti con successo!");
         }
+
+        public IActionResult OttieniVeicoli()
+        {
+            var veicoli = _context.Veicoli.ToList();
+            return View(veicoli);
+
+        }
     }
 }
