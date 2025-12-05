@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using FleetManager.Models;
+﻿using FleetManager.Models;
+using FleetManager.Models.ViewModels;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace FleetManager.Controllers
 {
@@ -20,6 +22,25 @@ namespace FleetManager.Controllers
         {
             var veicoli = _context.Veicoli.ToList();
             return View(veicoli);
+        }
+
+        [HttpPost]
+        public IActionResult AggiungiVeicolo(Veicolo v)
+        {
+            if (!ModelState.IsValid)
+                return View(v);
+
+            _context.Veicoli.Add(v);
+            _context.SaveChanges();
+
+            ViewBag.Messaggio = "Veicolo inserito!";
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult AggiungiVeicolo()
+        {
+            return View();
         }
 
         public IActionResult InserisciTantiDati()
@@ -127,9 +148,34 @@ namespace FleetManager.Controllers
 
         public IActionResult OttieniVeicoli()
         {
-            var veicoli = _context.Veicoli.ToList();
-            return View(veicoli);
+            Visualizzatore viewModel = new Visualizzatore
+            {
+                Veicoli = _context.Veicoli
+                    .Include(v => v.UtentePrenotato)
+                    .Include(v => v.UtenteManutentore)
+                    .ToList(),
+                Utenti = _context.Utenti.ToList(),
+                Prenotazioni = _context.Prenotazioni
+                    .Include(p => p.Veicolo)
+                    .Include(p => p.Utente)
+                    .OrderByDescending(p => p.OraPrenotazione)
+                    .ToList(),
+                Manutenzioni = _context.Manutenzioni
+                    .Include(m => m.Veicolo)
+                    .Include(m => m.Utente)
+                    .OrderByDescending(m => m.DataInizio)
+                    .ToList(),
+                Segnalazioni = _context.Segnalazioni
+                    .Include(s => s.Veicolo)
+                    .Include(s => s.Utente)
+                    .OrderByDescending(s => s.DataCreazione)
+                    .ToList(),
+                DashboardSnapshots = _context.DashboardSnapshots
+                    .OrderByDescending(d => d.Giorno)
+                    .ToList()
+            };
 
+            return View(viewModel);
         }
     }
 }
