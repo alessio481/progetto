@@ -1,8 +1,196 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "FleetManager Solutions";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<style>
+    body {
+        background: #f4f6f9;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #333;
+    }
+
+    /* Contenitore principale */
+    .landing-wrapper {
+        max-width: 1100px;
+        margin: 80px auto;
+        background: white;
+        padding: 50px;
+        border-radius: 18px;
+        box-shadow: 0 10px 35px rgba(0,0,0,0.12);
+    }
+
+    /* Header */
+    .title {
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: #1e2a38;
+    }
+
+    .subtitle {
+        font-size: 1.2rem;
+        color: #526070;
+        margin-top: 10px;
+    }
+
+    /* Divider */
+    .divider {
+        width: 90px;
+        height: 4px;
+        background: #0077c8;
+        border-radius: 3px;
+        margin: 25px auto;
+    }
+
+    /* Buttons */
+    .btn-main {
+        padding: 12px 32px;
+        font-size: 1.1rem;
+        border-radius: 8px;
+        transition: 0.25s ease;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .btn-login {
+        background: #0077c8;
+        color: white;
+    }
+
+        .btn-login:hover {
+            background: #005fa3;
+        }
+
+    .btn-register {
+        background: transparent;
+        color: #0077c8;
+        border: 2px solid #0077c8;
+    }
+
+        .btn-register:hover {
+            background: #e8f4ff;
+        }
+
+    /* Features section */
+    .features-section {
+        margin-top: 50px;
+        padding-top: 35px;
+        border-top: 1px solid #d9d9d9;
+    }
+
+    .features-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #1e2a38;
+    }
+
+    .features-text {
+        margin-top: 15px;
+        color: #4e5b6b;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    /* Cards per feature (da riempire con immagini più avanti) */
+    .feature-card {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.07);
+        transition: 0.2s ease-in-out;
+        text-align: center;
+    }
+
+        .feature-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+
+    .feature-icon {
+        width: 70px;
+        margin-bottom: 15px;
+        opacity: 0.85;
+    }
+
+    .feature-title {
+        font-weight: 600;
+        color: #1e2a38;
+        margin-bottom: 10px;
+    }
+
+    .feature-desc {
+        color: #626f80;
+        font-size: 0.95rem;
+    }
+</style>
+
+
+<div class="landing-wrapper text-center">
+
+    <h1 class="title">FleetManager Solutions</h1>
+
+    <p class="subtitle">
+        La piattaforma professionale per la gestione intelligente e centralizzata della flotta aziendale.
+    </p>
+
+    <div class="divider"></div>
+
+    <p class="mt-3">
+        Accedi alla dashboard dedicata o crea il tuo account per iniziare a utilizzare la piattaforma.
+    </p>
+
+    <div class="mt-4 d-flex justify-content-center gap-4">
+        <a asp-controller="Account" asp-action="Login">
+            <button class="btn-main btn-login">Accedi</button>
+        </a>
+
+        <a asp-controller="Account" asp-action="Register">
+            <button class="btn-main btn-register">Registrati</button>
+        </a>
+    </div>
+
+    <!-- Feature Cards (poi ci mettiamo le immagini che mi passi) -->
+    <div class="features-section">
+        <h2 class="features-title">Funzionalità principali</h2>
+
+        <p class="features-text">
+            Strumenti avanzati per aziende, amministratori e driver.
+            Monitoraggio in tempo reale, manutenzioni, prenotazioni e analisi operative.
+        </p>
+
+        <div class="row mt-4">
+
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <img class="feature-icon" src="/images/dashboard-icon.png" />
+                    <div class="feature-title">Dashboard Intuitiva</div>
+                    <div class="feature-desc">
+                        Visualizzazione chiara delle informazioni più importanti.
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <img class="feature-icon" src="/images/vehicle-icon.png" />
+                    <div class="feature-title">Gestione Veicoli</div>
+                    <div class="feature-desc">
+                        Stato, manutenzioni, assegnazioni e disponibilità sempre aggiornati.
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <img class="feature-icon" src="/images/analytics-icon.png" />
+                    <div class="feature-title">Report & Analytics</div>
+                    <div class="feature-desc">
+                        Analisi operative su consumi, costi e utilizzo dei veicoli.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
 </div>
