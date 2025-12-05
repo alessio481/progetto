@@ -1,0 +1,274 @@
+﻿@model Visualizzatore
+@{
+    ViewData["Title"] = "Debug";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-3">Debug - Riepilogo Dati</h1>
+    <p class="text-muted">Pagina di controllo per verificare rapidamente i dati presenti nel database.</p>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-2">
+            <div class="card text-bg-primary h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle">Veicoli</h6>
+                    <h3 class="card-title">@Model.Veicoli.Count</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-bg-secondary h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle">Utenti</h6>
+                    <h3 class="card-title">@Model.Utenti.Count</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-bg-success h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle">Prenotazioni</h6>
+                    <h3 class="card-title">@Model.Prenotazioni.Count</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-bg-warning h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle">Manutenzioni</h6>
+                    <h3 class="card-title">@Model.Manutenzioni.Count</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-bg-danger h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle">Segnalazioni</h6>
+                    <h3 class="card-title">@Model.Segnalazioni.Count</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-bg-info h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle">Snapshots</h6>
+                    <h3 class="card-title">@Model.DashboardSnapshots.Count</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion" id="debugAccordion">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingVeicoli">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseVeicoli" aria-expanded="true" aria-controls="collapseVeicoli">
+                    Veicoli (@Model.Veicoli.Count)
+                </button>
+            </h2>
+            <div id="collapseVeicoli" class="accordion-collapse collapse show" aria-labelledby="headingVeicoli" data-bs-parent="#debugAccordion">
+                <div class="accordion-body table-responsive">
+                    <table class="table table-striped align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Targa</th>
+                                <th>Modello</th>
+                                <th>Stato</th>
+                                <th>Carburante</th>
+                                <th>Prenotato da</th>
+                                <th>Manutentore</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var veicolo in Model.Veicoli)
+                            {
+                                <tr>
+                                    <td>@veicolo.Targa</td>
+                                    <td>@veicolo.Marca @veicolo.Modello</td>
+                                    <td>@veicolo.Stato</td>
+                                    <td>@veicolo.LivelloCarburante %</td>
+                                    <td>@(veicolo.UtentePrenotato?.NomeCompleto ?? "-")</td>
+                                    <td>@(veicolo.UtenteManutentore?.NomeCompleto ?? "-")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingUtenti">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseUtenti" aria-expanded="false" aria-controls="collapseUtenti">
+                    Utenti (@Model.Utenti.Count)
+                </button>
+            </h2>
+            <div id="collapseUtenti" class="accordion-collapse collapse" aria-labelledby="headingUtenti" data-bs-parent="#debugAccordion">
+                <div class="accordion-body table-responsive">
+                    <table class="table table-striped align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Ruolo</th>
+                                <th>Registrato il</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var utente in Model.Utenti)
+                            {
+                                <tr>
+                                    <td>@utente.NomeCompleto</td>
+                                    <td>@utente.Email</td>
+                                    <td>@utente.Ruolo</td>
+                                    <td>@utente.DataRegistrazione.ToShortDateString()</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingPrenotazioni">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePrenotazioni" aria-expanded="false" aria-controls="collapsePrenotazioni">
+                    Prenotazioni (@Model.Prenotazioni.Count)
+                </button>
+            </h2>
+            <div id="collapsePrenotazioni" class="accordion-collapse collapse" aria-labelledby="headingPrenotazioni" data-bs-parent="#debugAccordion">
+                <div class="accordion-body table-responsive">
+                    <table class="table table-striped align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Veicolo</th>
+                                <th>Utente</th>
+                                <th>Inizio</th>
+                                <th>Fine</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var prenotazione in Model.Prenotazioni)
+                            {
+                                <tr>
+                                    <td>@prenotazione.Veicolo?.Targa</td>
+                                    <td>@prenotazione.Utente?.NomeCompleto</td>
+                                    <td>@prenotazione.OraPrenotazione</td>
+                                    <td>@(prenotazione.OraRilascio?.ToString() ?? "in corso")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingManutenzioni">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseManutenzioni" aria-expanded="false" aria-controls="collapseManutenzioni">
+                    Manutenzioni (@Model.Manutenzioni.Count)
+                </button>
+            </h2>
+            <div id="collapseManutenzioni" class="accordion-collapse collapse" aria-labelledby="headingManutenzioni" data-bs-parent="#debugAccordion">
+                <div class="accordion-body table-responsive">
+                    <table class="table table-striped align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Veicolo</th>
+                                <th>Responsabile</th>
+                                <th>Descrizione</th>
+                                <th>Inizio</th>
+                                <th>Fine</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var manutenzione in Model.Manutenzioni)
+                            {
+                                <tr>
+                                    <td>@manutenzione.Veicolo?.Targa</td>
+                                    <td>@manutenzione.Utente?.NomeCompleto</td>
+                                    <td>@manutenzione.Descrizione</td>
+                                    <td>@manutenzione.DataInizio</td>
+                                    <td>@(manutenzione.DataFine?.ToString() ?? "in corso")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingSegnalazioni">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSegnalazioni" aria-expanded="false" aria-controls="collapseSegnalazioni">
+                    Segnalazioni (@Model.Segnalazioni.Count)
+                </button>
+            </h2>
+            <div id="collapseSegnalazioni" class="accordion-collapse collapse" aria-labelledby="headingSegnalazioni" data-bs-parent="#debugAccordion">
+                <div class="accordion-body table-responsive">
+                    <table class="table table-striped align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Veicolo</th>
+                                <th>Utente</th>
+                                <th>Stato</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var segnalazione in Model.Segnalazioni)
+                            {
+                                <tr>
+                                    <td>@segnalazione.Tipo</td>
+                                    <td>@(segnalazione.Veicolo?.Targa ?? "-")</td>
+                                    <td>@segnalazione.Utente?.NomeCompleto</td>
+                                    <td>@segnalazione.Stato</td>
+                                    <td>@segnalazione.DataCreazione</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingSnapshots">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSnapshots" aria-expanded="false" aria-controls="collapseSnapshots">
+                    Dashboard Snapshots (@Model.DashboardSnapshots.Count)
+                </button>
+            </h2>
+            <div id="collapseSnapshots" class="accordion-collapse collapse" aria-labelledby="headingSnapshots" data-bs-parent="#debugAccordion">
+                <div class="accordion-body table-responsive">
+                    <table class="table table-striped align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Giorno</th>
+                                <th>Totali</th>
+                                <th>Disponibili</th>
+                                <th>In uso</th>
+                                <th>Manutenzione</th>
+                                <th>Segnalazioni aperte</th>
+                                <th>Prenotazioni attive</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var snapshot in Model.DashboardSnapshots)
+                            {
+                                <tr>
+                                    <td>@snapshot.Giorno.ToShortDateString()</td>
+                                    <td>@snapshot.VeicoliTotali</td>
+                                    <td>@snapshot.VeicoliDisponibili</td>
+                                    <td>@snapshot.VeicoliInUso</td>
+                                    <td>@snapshot.VeicoliInManutenzione</td>
+                                    <td>@snapshot.SegnalazioniAperte</td>
+                                    <td>@snapshot.PrenotazioniAttive</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

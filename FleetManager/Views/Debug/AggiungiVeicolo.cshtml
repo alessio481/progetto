@@ -1,0 +1,33 @@
+﻿@model FleetManager.Models.Veicolo
+
+<h2>Inserisci Veicolo</h2>
+
+@if (ViewBag.Messaggio != null)
+{
+    <div style="color:green">@ViewBag.Messaggio</div>
+}
+
+<form asp-action="AggiungiVeicolo" method="post">
+    <label>Targa</label>
+    <input asp-for="Targa" class="form-control" />
+
+    <label>Marca</label>
+    <input asp-for="Marca" class="form-control" />
+
+    <label>Modello</label>
+    <input asp-for="Modello" class="form-control" />
+
+    <label>Tipo</label>
+    <input asp-for="Tipo" class="form-control" />
+
+    <label>Stato</label>
+    <input asp-for="Stato" class="form-control" />
+
+    <label>Livello carburante</label>
+    <input asp-for="LivelloCarburante" class="form-control" />
+
+    <label>Colore</label>
+    <input asp-for="Colore" class="form-control" />
+
+    <button type="submit" class="btn btn-primary mt-3">Inserisci</button>
+</form>
