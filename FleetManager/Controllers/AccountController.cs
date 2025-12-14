@@ -53,11 +53,12 @@ namespace FleetManager.Controllers
             // AUTENTICAZIONE CON COOKIE SEMPLICE unica parte difficile
             // ===========================================
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, utente.Email),
-                new Claim("UtenteID", utente.UtenteID.ToString()),
-                new Claim("Ruolo", utente.Ruolo)
-            };
+                {
+                    new Claim(ClaimTypes.Name, utente.Email),
+                    new Claim(ClaimTypes.NameIdentifier, utente.UtenteID.ToString()),
+                    new Claim(ClaimTypes.Role, utente.Ruolo) // ✅ QUI
+                };
+
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
@@ -65,6 +66,15 @@ namespace FleetManager.Controllers
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(identity)
             );
+
+            if (utente.Ruolo == "Admin")
+            {
+                return RedirectToAction("Dashboard", "Admin");
+            }else if (utente.Ruolo == "Driver")
+            {
+                return RedirectToAction("Dashboard", "Driver"); 
+
+            }
 
             return RedirectToAction("Index", "Home");
         }

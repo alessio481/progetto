@@ -1,0 +1,70 @@
+﻿@model FleetManager.Models.ViewModels.Visualizzatore
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container mt-4">
+    <h2>Admin Dashboard</h2>
+    <p class="text-muted">Panoramica completa dei dati nel database.</p>
+
+    <div class="row g-3 my-3">
+        <div class="col-md-4"><div class="card p-3"><b>Utenti</b><div>@Model.Utenti.Count</div></div></div>
+        <div class="col-md-4"><div class="card p-3"><b>Veicoli</b><div>@Model.Veicoli.Count</div></div></div>
+        <div class="col-md-4"><div class="card p-3"><b>Prenotazioni</b><div>@Model.Prenotazioni.Count</div></div></div>
+        <div class="col-md-4"><div class="card p-3"><b>Manutenzioni</b><div>@Model.Manutenzioni.Count</div></div></div>
+        <div class="col-md-4"><div class="card p-3"><b>Segnalazioni</b><div>@Model.Segnalazioni.Count</div></div></div>
+        <div class="col-md-4"><div class="card p-3"><b>Snapshot</b><div>@Model.DashboardSnapshots.Count</div></div></div>
+    </div>
+
+    <hr />
+
+    <h4>Utenti</h4>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Ruolo</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var u in Model.Utenti)
+            {
+                <tr>
+                    <td>@u.UtenteID</td>
+                    <td>@u.NomeCompleto</td>
+                    <td>@u.Email</td>
+                    <td>@u.Ruolo</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4 class="mt-4">Veicoli</h4>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Targa</th>
+                <th>Marca</th>
+                <th>Modello</th>
+                <th>Stato</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var v in Model.Veicoli)
+            {
+                <tr>
+                    <td>@v.VeicoloId</td>
+                    <td>@v.Targa</td>
+                    <td>@v.Marca</td>
+                    <td>@v.Modello</td>
+                    <td>@v.Stato</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Stessa cosa per Prenotazioni / Manutenzioni / Segnalazioni se vuoi -->
+</div>
