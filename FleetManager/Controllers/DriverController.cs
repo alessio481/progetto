@@ -19,13 +19,14 @@ namespace FleetManager.Controllers
 
         public IActionResult Dashboard()
         {
-            // ID del driver dal cookie
+            // ID del driver dal cookie, che viene prenso al login da DB
             var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrWhiteSpace(idStr) || !int.TryParse(idStr, out int driverId))
                 return RedirectToAction("Login", "Account");
 
-            // ✅ Costruiamo un Visualizzatore "filtrato" sul driver loggato
-            var vm = new Visualizzatore
+            //VisualizzatoreDatiGenerali "filtrato" sul driver loggato, può sembrare nn sicuro ma lo è. i viewModel di base 
+            //servono per passare i dati dai controller alle view. (tipo VisualizzatoreDatiGenerali)
+            var vm = new VisualizzatoreDatiGenerali
             {
                 // Se vuoi far vedere anche i veicoli, puoi mostrare:
                 // - tutti i veicoli

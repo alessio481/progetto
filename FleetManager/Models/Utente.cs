@@ -29,7 +29,7 @@ namespace FleetManager.Models
 
         [Required]
         [Display(Name = "Ruolo")]
-        public string Ruolo { get; set; } = "User"; // Admin, User, Driver
+        public string Ruolo { get; set; } = "Driver"; // Admin, Driver
 
         [Display(Name = "Data Registrazione")]
         public DateTime DataRegistrazione { get; set; } = DateTime.Now;

@@ -3,7 +3,7 @@ using FleetManager.Models;
 
 namespace FleetManager.Models.ViewModels
 {
-    public class Visualizzatore
+    public class VisualizzatoreDatiGenerali
     {
         public List<Veicolo> Veicoli { get; set; } = new();
         public List<Utente> Utenti { get; set; } = new();

@@ -16,9 +16,16 @@ namespace FleetManager.Controllers
             _context = context;
         }
 
+
+        [HttpGet]
+        public IActionResult ProvaAPI()
+        {
+            Console.WriteLine("Ha funzionato");
+            return Ok();
+        }
         public IActionResult Dashboard()
         {
-            var viewModel = new Visualizzatore
+            var viewModel = new VisualizzatoreDatiGenerali
             {
                 Veicoli = _context.Veicoli
                     .Include(v => v.UtentePrenotato)

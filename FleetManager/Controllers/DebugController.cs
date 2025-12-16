@@ -161,7 +161,7 @@ namespace FleetManager.Controllers
 
         public IActionResult OttieniVeicoli()
         {
-            Visualizzatore viewModel = new Visualizzatore
+            VisualizzatoreDatiGenerali viewModel = new VisualizzatoreDatiGenerali
             {
                 Veicoli = _context.Veicoli
                     .Include(v => v.UtentePrenotato)

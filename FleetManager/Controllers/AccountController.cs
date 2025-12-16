@@ -56,7 +56,7 @@ namespace FleetManager.Controllers
                 {
                     new Claim(ClaimTypes.Name, utente.Email),
                     new Claim(ClaimTypes.NameIdentifier, utente.UtenteID.ToString()),
-                    new Claim(ClaimTypes.Role, utente.Ruolo) // ✅ QUI
+                    new Claim(ClaimTypes.Role, utente.Ruolo)
                 };
 
 
