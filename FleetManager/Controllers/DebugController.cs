@@ -43,7 +43,7 @@ namespace FleetManager.Controllers
             return View();
         }
 
-        /*
+        
         public IActionResult InserisciTantiDati()
         {
             // =======================================================
@@ -156,7 +156,7 @@ namespace FleetManager.Controllers
 
             return Content("📌 Dati realistici inseriti con successo!");
         }
-        */
+        
 
 
         public IActionResult OttieniVeicoli()
