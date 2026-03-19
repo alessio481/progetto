@@ -38,10 +38,11 @@
                 <strong id="carsCountLabel">0 veicoli</strong>
             </div>
 
-            <section class="search-panel">
+            <details class="search-panel">
+                <summary class="search-summary">Ricerca avanzata</summary>
                 <div class="search-grid">
                     <div class="search-field">
-                        <label for="searchInput">Ricerca avanzata</label>
+                        <label for="searchInput">Ricerca</label>
                         <input id="searchInput" type="search" placeholder="Modello, targa, stato, gruppo, carburante">
                     </div>
                     <div class="search-field">
@@ -67,13 +68,12 @@
                         </select>
                     </div>
                 </div>
-            </section>
+            </details>
 
             <div class="summary-strip">
                 <div class="summary-card"><span>Veicoli visibili</span><strong id="totalCount">0</strong></div>
                 <div class="summary-card"><span>In uso</span><strong id="inUseCount">0</strong></div>
                 <div class="summary-card"><span>Manutenzione</span><strong id="maintenanceCount">0</strong></div>
-                <div class="summary-card"><span>Gruppi attivi</span><strong id="groupCount">0</strong></div>
             </div>
 
             <div id="carsContainer"></div>

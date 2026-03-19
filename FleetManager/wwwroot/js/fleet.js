@@ -204,12 +204,10 @@
         const cars = state.cars;
         const inUse = cars.filter((car) => normalizeStatus(car.stato) === 'in uso').length;
         const maintenance = cars.filter((car) => normalizeStatus(car.stato).includes('manutenzione')).length;
-        const activeGroups = new Set(cars.map((car) => getCardGroup(car)));
 
         document.getElementById('totalCount').textContent = String(cars.length);
         document.getElementById('inUseCount').textContent = String(inUse);
         document.getElementById('maintenanceCount').textContent = String(maintenance);
-        document.getElementById('groupCount').textContent = String(activeGroups.size);
         document.getElementById('carsCountLabel').textContent = cars.length + (cars.length === 1 ? ' veicolo' : ' veicoli');
     }
 
