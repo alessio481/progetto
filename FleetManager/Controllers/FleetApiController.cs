@@ -11,6 +11,10 @@ namespace FleetManager.Controllers
     [Route("api")]
     public class FleetApiController : ControllerBase
     {
+        private const string Gruppo1 = "FONDAZIONE SETTORE-1";
+        private const string Gruppo2 = "FONDAZIONE SETTORE-2";
+        private const string Gruppo3 = "FONDAZIONE SETTORE-3";
+
         private readonly ApplicationDbContext _context;
 
         public FleetApiController(ApplicationDbContext context)
@@ -21,14 +25,15 @@ namespace FleetManager.Controllers
         [HttpGet("session/me")]
         public async Task<IActionResult> Me()
         {
-            if (!int.TryParse(GetUserId(), out var userId))
+            var userId = GetCurrentUserId();
+            if (userId == null)
             {
                 return Unauthorized();
             }
 
             var user = await _context.Utenti
                 .AsNoTracking()
-                .FirstOrDefaultAsync(item => item.UtenteID == userId);
+                .FirstOrDefaultAsync(item => item.UtenteID == userId.Value);
 
             if (user == null)
             {
@@ -68,24 +73,26 @@ namespace FleetManager.Controllers
         [HttpGet("fleet/cars")]
         public async Task<IActionResult> GetCars()
         {
-            if (!int.TryParse(GetUserId(), out var currentUserId))
+            var userId = GetCurrentUserId();
+            if (userId == null)
             {
                 return Unauthorized();
             }
 
-            var activeBookings = await GetActiveBookingsAsync();
-            var userLookup = await GetUserLookupAsync();
+            var isAdmin = User.IsInRole("admin");
+            var activeBookings = await LoadActiveBookingsAsync();
+            var users = await LoadUsersByIdAsync();
             var cars = await _context.Veicoli
                 .AsNoTracking()
                 .OrderBy(car => car.VeicoloId)
                 .ToListAsync();
 
-            var payload = cars
-                .Select(car => ToDto(car, activeBookings, userLookup))
-                .Where(car => User.IsInRole("admin") || car.PossessoreMatricola == currentUserId)
+            var result = cars
+                .Select(car => MapCar(car, activeBookings, users))
+                .Where(car => isAdmin || car.PossessoreMatricola == userId.Value)
                 .ToList();
 
-            return Ok(new { value = payload });
+            return Ok(new { value = result });
         }
 
         [HttpPatch("fleet/cars/{id:int}")]
@@ -98,40 +105,42 @@ namespace FleetManager.Controllers
             }
 
             var isAdmin = User.IsInRole("admin");
-            var activeBookings = await GetActiveBookingsAsync();
-            var currentOwnerId = ResolveAssignedUserId(car, activeBookings);
+            var activeBookings = await LoadActiveBookingsAsync();
 
             if (!isAdmin)
             {
-                if (!int.TryParse(GetUserId(), out var userId))
+                var userId = GetCurrentUserId();
+                if (userId == null)
                 {
                     return Unauthorized();
                 }
 
-                if (currentOwnerId != userId)
+                if (GetOwnerId(car, activeBookings) != userId.Value)
                 {
                     return Forbid();
                 }
             }
 
-            ApplySharedFields(car, request);
+            // Tutti possono aggiornare i campi base della propria auto.
+            FillCarFields(car, request);
 
+            // Solo l'admin puo cambiare assegnatario e gruppo.
             if (isAdmin)
             {
-                var ownerResolution = await ResolveOwnerAsync(request);
-                if (!ownerResolution.OwnerId.HasValue)
+                var owner = await ResolveOwnerIdAsync(request);
+                if (owner == null)
                 {
-                    return BadRequest(ownerResolution.ErrorMessage ?? "Assegnatario non valido.");
+                    return BadRequest("Assegnatario non valido.");
                 }
 
-                car.UtentePrenotatoID = ownerResolution.OwnerId.Value;
+                car.UtentePrenotatoID = owner.Value;
                 car.Gruppo = NormalizeGroup(request.Gruppo, car.Tipo);
             }
 
             await _context.SaveChangesAsync();
 
-            var userLookup = await GetUserLookupAsync();
-            return Ok(ToDto(car, activeBookings, userLookup));
+            var users = await LoadUsersByIdAsync();
+            return Ok(MapCar(car, activeBookings, users));
         }
 
         [HttpPatch("fleet/cars/{id:int}/maintenance-request")]
@@ -143,16 +152,16 @@ namespace FleetManager.Controllers
                 return NotFound();
             }
 
-            var isAdmin = User.IsInRole("admin");
-            var activeBookings = await GetActiveBookingsAsync();
-            var currentOwnerId = ResolveAssignedUserId(car, activeBookings);
-
-            if (!int.TryParse(GetUserId(), out var userId))
+            var userId = GetCurrentUserId();
+            if (userId == null)
             {
                 return Unauthorized();
             }
 
-            if (!isAdmin && currentOwnerId != userId)
+            var activeBookings = await LoadActiveBookingsAsync();
+            var isAdmin = User.IsInRole("admin");
+
+            if (!isAdmin && GetOwnerId(car, activeBookings) != userId.Value)
             {
                 return Forbid();
             }
@@ -161,8 +170,8 @@ namespace FleetManager.Controllers
             car.DataAggiornamento = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
-            var userLookup = await GetUserLookupAsync();
-            return Ok(ToDto(car, activeBookings, userLookup));
+            var users = await LoadUsersByIdAsync();
+            return Ok(MapCar(car, activeBookings, users));
         }
 
         [HttpPatch("fleet/cars/{id:int}/use-now")]
@@ -174,14 +183,16 @@ namespace FleetManager.Controllers
                 return NotFound();
             }
 
-            if (!int.TryParse(GetUserId(), out var userId))
+            var userId = GetCurrentUserId();
+            if (userId == null)
             {
                 return Unauthorized();
             }
 
-            var activeBookings = await GetActiveBookingsAsync();
-            var currentOwnerId = ResolveAssignedUserId(car, activeBookings);
-            if (currentOwnerId != userId && !User.IsInRole("admin"))
+            var activeBookings = await LoadActiveBookingsAsync();
+            var isAdmin = User.IsInRole("admin");
+
+            if (!isAdmin && GetOwnerId(car, activeBookings) != userId.Value)
             {
                 return Forbid();
             }
@@ -193,8 +204,8 @@ namespace FleetManager.Controllers
             car.DataAggiornamento = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
-            var userLookup = await GetUserLookupAsync();
-            return Ok(ToDto(car, activeBookings, userLookup));
+            var users = await LoadUsersByIdAsync();
+            return Ok(MapCar(car, activeBookings, users));
         }
 
         [Authorize(Roles = "admin")]
@@ -211,43 +222,41 @@ namespace FleetManager.Controllers
             car.DataAggiornamento = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
-            var activeBookings = await GetActiveBookingsAsync();
-            var userLookup = await GetUserLookupAsync();
-            return Ok(ToDto(car, activeBookings, userLookup));
+            var activeBookings = await LoadActiveBookingsAsync();
+            var users = await LoadUsersByIdAsync();
+            return Ok(MapCar(car, activeBookings, users));
         }
 
         [Authorize(Roles = "admin")]
         [HttpPost("fleet/cars")]
         public async Task<IActionResult> CreateCar([FromBody] FleetCarUpsertRequest request)
         {
-            var ownerResolution = await ResolveOwnerAsync(request);
-            if (!ownerResolution.OwnerId.HasValue)
+            var ownerId = await ResolveOwnerIdAsync(request);
+            if (ownerId == null)
             {
-                return BadRequest(ownerResolution.ErrorMessage ?? "Assegnatario non valido.");
+                return BadRequest("Assegnatario non valido.");
             }
 
             var car = new Veicolo
             {
-                Targa = string.Empty,
                 Marca = "Veicolo",
                 Modello = "Nuovo",
                 Tipo = "Auto",
                 Stato = "Disponibile",
                 LivelloCarburante = 1,
-                Chilometraggio = 0,
-                UtentePrenotatoID = ownerResolution.OwnerId.Value,
                 Gruppo = NormalizeGroup(request.Gruppo, "Auto"),
+                UtentePrenotatoID = ownerId.Value,
                 DataCreazione = DateTime.UtcNow
             };
 
-            ApplySharedFields(car, request);
+            FillCarFields(car, request);
 
             _context.Veicoli.Add(car);
             await _context.SaveChangesAsync();
 
-            var activeBookings = await GetActiveBookingsAsync();
-            var userLookup = await GetUserLookupAsync();
-            return Ok(ToDto(car, activeBookings, userLookup));
+            var activeBookings = await LoadActiveBookingsAsync();
+            var users = await LoadUsersByIdAsync();
+            return Ok(MapCar(car, activeBookings, users));
         }
 
         [Authorize(Roles = "admin")]
@@ -280,16 +289,17 @@ namespace FleetManager.Controllers
             _context.Prenotazioni.RemoveRange(_context.Prenotazioni);
             _context.Veicoli.RemoveRange(_context.Veicoli);
             await _context.SaveChangesAsync();
-
             return NoContent();
         }
 
-        private string? GetUserId()
+        private int? GetCurrentUserId()
         {
-            return User.FindFirstValue("matricola") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var value = User.FindFirstValue("matricola") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return int.TryParse(value, out var userId) ? userId : null;
         }
 
-        private async Task<Dictionary<int, ActiveBookingInfo>> GetActiveBookingsAsync()
+        // Se esiste una prenotazione ancora aperta, la usiamo come fallback per capire l'assegnazione.
+        private async Task<Dictionary<int, ActiveBookingInfo>> LoadActiveBookingsAsync()
         {
             return await _context.Prenotazioni
                 .AsNoTracking()
@@ -308,7 +318,7 @@ namespace FleetManager.Controllers
                 .ToDictionaryAsync(item => item.VeicoloId);
         }
 
-        private async Task<Dictionary<int, FleetUserReference>> GetUserLookupAsync()
+        private async Task<Dictionary<int, FleetUserReference>> LoadUsersByIdAsync()
         {
             return await _context.Utenti
                 .AsNoTracking()
@@ -322,24 +332,25 @@ namespace FleetManager.Controllers
                     });
         }
 
-        private async Task<OwnerResolution> ResolveOwnerAsync(FleetCarUpsertRequest request)
+        // L'admin puo scrivere sia l'id sia nome/email. Qui traduciamo tutto in UtenteID.
+        private async Task<int?> ResolveOwnerIdAsync(FleetCarUpsertRequest request)
         {
             if (request.PossessoreMatricola.HasValue)
             {
-                var owner = await _context.Utenti
+                var exists = await _context.Utenti
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(user => user.UtenteID == request.PossessoreMatricola.Value);
+                    .AnyAsync(user => user.UtenteID == request.PossessoreMatricola.Value);
 
-                if (owner != null)
+                if (exists)
                 {
-                    return new OwnerResolution { OwnerId = owner.UtenteID };
+                    return request.PossessoreMatricola.Value;
                 }
             }
 
-            var query = NormalizeLookup(request.OwnerQuery);
+            var query = NormalizeText(request.OwnerQuery);
             if (string.IsNullOrWhiteSpace(query))
             {
-                return new OwnerResolution { ErrorMessage = "Inserisci il nome o l'email dell'assegnatario." };
+                return null;
             }
 
             var users = await _context.Utenti
@@ -352,56 +363,39 @@ namespace FleetManager.Controllers
                 })
                 .ToListAsync();
 
-            var exactMatches = users
-                .Where(user =>
-                    NormalizeLookup(user.DisplayName) == query ||
-                    NormalizeLookup(user.Email) == query ||
-                    NormalizeLookup(BuildOwnerChoice(user)) == query ||
-                    NormalizeLookup(user.Id.ToString()) == query)
+            var exactMatches = users.Where(user =>
+                NormalizeText(user.DisplayName) == query ||
+                NormalizeText(user.Email) == query ||
+                NormalizeText(user.Id.ToString()) == query ||
+                NormalizeText(BuildUserLabel(user)) == query)
                 .ToList();
 
             if (exactMatches.Count == 1)
             {
-                return new OwnerResolution { OwnerId = exactMatches[0].Id };
+                return exactMatches[0].Id;
             }
 
-            if (exactMatches.Count > 1)
-            {
-                return new OwnerResolution { ErrorMessage = "Assegnatario ambiguo: scrivi nome e cognome completi oppure scegli dal suggerimento." };
-            }
-
-            var partialMatches = users
-                .Where(user =>
-                    NormalizeLookup(user.DisplayName).Contains(query) ||
-                    NormalizeLookup(user.Email).Contains(query))
+            var partialMatches = users.Where(user =>
+                NormalizeText(user.DisplayName).Contains(query) ||
+                NormalizeText(user.Email).Contains(query))
                 .ToList();
 
-            if (partialMatches.Count == 1)
-            {
-                return new OwnerResolution { OwnerId = partialMatches[0].Id };
-            }
-
-            if (partialMatches.Count > 1)
-            {
-                return new OwnerResolution { ErrorMessage = "Ho trovato piu utenti simili. Scegli un suggerimento piu preciso." };
-            }
-
-            return new OwnerResolution { ErrorMessage = "Utente assegnatario non trovato." };
+            return partialMatches.Count == 1 ? partialMatches[0].Id : null;
         }
 
-        private static FleetCarResponse ToDto(
+        private static FleetCarResponse MapCar(
             Veicolo car,
             IReadOnlyDictionary<int, ActiveBookingInfo> activeBookings,
-            IReadOnlyDictionary<int, FleetUserReference> userLookup)
+            IReadOnlyDictionary<int, FleetUserReference> users)
         {
-            activeBookings.TryGetValue(car.VeicoloId, out var activeBooking);
-            var ownerId = ResolveAssignedUserId(car, activeBookings);
-            userLookup.TryGetValue(ownerId ?? -1, out var owner);
+            var ownerId = GetOwnerId(car, activeBookings);
+            users.TryGetValue(ownerId ?? -1, out var owner);
+            activeBookings.TryGetValue(car.VeicoloId, out var booking);
 
             return new FleetCarResponse
             {
                 Id = car.VeicoloId,
-                Modello = BuildDisplayModel(car),
+                Modello = BuildModelLabel(car),
                 Targa = car.Targa,
                 PossessoreMatricola = ownerId,
                 PossessoreNome = owner?.DisplayName,
@@ -410,38 +404,37 @@ namespace FleetManager.Controllers
                 FuelLevel = Math.Clamp(car.LivelloCarburante, 0, 2),
                 FuelType = car.Carburante,
                 Stato = ToUiStatus(car.Stato),
-                DataPossesso = car.DataPossesso ?? activeBooking?.DataPrenotazione ?? car.DataAggiornamento ?? car.DataCreazione,
+                DataPossesso = car.DataPossesso ?? booking?.DataPrenotazione ?? car.DataAggiornamento ?? car.DataCreazione,
                 ImageUrl = car.ImageUrl,
                 RevisioneInizio = car.RevisioneInizio,
-                RevisioneScadenza = car.RevisioneScadenza,
+                RevisioneScadenza = CalculateExpiry(car.RevisioneInizio, 2),
                 BolloInizio = car.BolloInizio,
-                BolloScadenza = car.BolloScadenza,
+                BolloScadenza = CalculateExpiry(car.BolloInizio, 1),
                 TagliandoInizio = car.TagliandoInizio,
-                TagliandoScadenza = car.TagliandoScadenza,
+                TagliandoScadenza = CalculateExpiry(car.TagliandoInizio, 1),
                 AssicurazioneInizio = car.AssicurazioneInizio,
-                AssicurazioneScadenza = car.AssicurazioneScadenza
+                AssicurazioneScadenza = CalculateExpiry(car.AssicurazioneInizio, 1)
             };
         }
 
-        private static int? ResolveAssignedUserId(Veicolo car, IReadOnlyDictionary<int, ActiveBookingInfo> activeBookings)
+        private static int? GetOwnerId(Veicolo car, IReadOnlyDictionary<int, ActiveBookingInfo> activeBookings)
         {
             if (car.UtentePrenotatoID.HasValue)
             {
                 return car.UtentePrenotatoID.Value;
             }
 
-            return activeBookings.TryGetValue(car.VeicoloId, out var activeBooking)
-                ? activeBooking.UtenteId
-                : null;
+            return activeBookings.TryGetValue(car.VeicoloId, out var booking) ? booking.UtenteId : null;
         }
 
-        private static void ApplySharedFields(Veicolo car, FleetCarUpsertRequest request)
+        // Qui teniamo in un solo punto tutti i campi "modificabili" del veicolo.
+        private static void FillCarFields(Veicolo car, FleetCarUpsertRequest request)
         {
-            var (marca, modello) = SplitModelInput(request.Modello, car.Marca, car.Modello);
+            var (marca, modello) = SplitModel(request.Modello, car.Marca, car.Modello);
 
             car.Marca = marca;
             car.Modello = modello;
-            car.Targa = request.Targa?.Trim().ToUpperInvariant() ?? string.Empty;
+            car.Targa = (request.Targa ?? string.Empty).Trim().ToUpperInvariant();
             car.Chilometraggio = Math.Max(request.Chilometraggio, 0);
             car.LivelloCarburante = Math.Clamp(request.FuelLevel, 0, 2);
             car.Carburante = request.FuelType?.Trim();
@@ -460,29 +453,24 @@ namespace FleetManager.Controllers
             car.DataAggiornamento = DateTime.UtcNow;
         }
 
-        private static DateTime? CalculateExpiry(DateTime? startDate, int years)
+        private static (string Marca, string Modello) SplitModel(string? value, string? oldMarca, string? oldModello)
         {
-            return startDate?.AddYears(years);
-        }
-
-        private static (string Marca, string Modello) SplitModelInput(string? input, string? fallbackMarca, string? fallbackModello)
-        {
-            var value = (input ?? string.Empty).Trim();
-            if (string.IsNullOrWhiteSpace(value))
+            var text = (value ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(text))
             {
-                return (fallbackMarca?.Trim() ?? "Veicolo", fallbackModello?.Trim() ?? "Senza modello");
+                return (oldMarca?.Trim() ?? "Veicolo", oldModello?.Trim() ?? "Senza modello");
             }
 
-            var parts = value.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+            var parts = text.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length == 1)
             {
-                return (fallbackMarca?.Trim() ?? parts[0], parts[0]);
+                return (oldMarca?.Trim() ?? parts[0], parts[0]);
             }
 
             return (parts[0], parts[1]);
         }
 
-        private static string BuildDisplayModel(Veicolo car)
+        private static string BuildModelLabel(Veicolo car)
         {
             var marca = car.Marca?.Trim();
             var modello = car.Modello?.Trim();
@@ -492,12 +480,7 @@ namespace FleetManager.Controllers
                 return modello ?? string.Empty;
             }
 
-            if (string.IsNullOrWhiteSpace(modello))
-            {
-                return marca;
-            }
-
-            if (string.Equals(marca, modello, StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(modello) || string.Equals(marca, modello, StringComparison.OrdinalIgnoreCase))
             {
                 return marca;
             }
@@ -505,27 +488,26 @@ namespace FleetManager.Controllers
             return marca + " " + modello;
         }
 
-        private static string NormalizeGroup(string? explicitGroup, string? tipo)
+        private static string NormalizeGroup(string? group, string? tipo)
         {
-            var group = (explicitGroup ?? string.Empty).Trim().ToUpperInvariant();
-            if (group is "FONDAZIONE SETTORE-1" or "FONDAZIONE SETTORE-2" or "FONDAZIONE SETTORE-3")
+            var cleaned = (group ?? string.Empty).Trim().ToUpperInvariant();
+            if (cleaned == Gruppo1 || cleaned == Gruppo2 || cleaned == Gruppo3)
             {
-                return group;
+                return cleaned;
             }
 
-            var vehicleType = (tipo ?? string.Empty).Trim().ToLowerInvariant();
-            return vehicleType switch
+            var tipoNormale = (tipo ?? string.Empty).Trim().ToLowerInvariant();
+            return tipoNormale switch
             {
-                "auto" => "FONDAZIONE SETTORE-1",
-                "furgone" => "FONDAZIONE SETTORE-2",
-                _ => "FONDAZIONE SETTORE-3"
+                "auto" => Gruppo1,
+                "furgone" => Gruppo2,
+                _ => Gruppo3
             };
         }
 
         private static string ToUiStatus(string? sqlStatus)
         {
-            var status = (sqlStatus ?? string.Empty).Trim().ToLowerInvariant();
-            return status switch
+            return NormalizeText(sqlStatus) switch
             {
                 "disponibile" => "non in uso",
                 "inuso" => "in uso",
@@ -533,14 +515,13 @@ namespace FleetManager.Controllers
                 "richiestamanu" => "in richiesta manutenzione",
                 "richiestamanutenzione" => "in richiesta manutenzione",
                 "richiesta manutenzione" => "in richiesta manutenzione",
-                _ => string.IsNullOrWhiteSpace(status) ? "non in uso" : status
+                _ => string.IsNullOrWhiteSpace(sqlStatus) ? "non in uso" : sqlStatus.Trim().ToLowerInvariant()
             };
         }
 
         private static string ToSqlStatus(string? uiStatus)
         {
-            var status = (uiStatus ?? string.Empty).Trim().ToLowerInvariant();
-            return status switch
+            return NormalizeText(uiStatus) switch
             {
                 "non in uso" => "Disponibile",
                 "in uso" => "InUso",
@@ -550,12 +531,17 @@ namespace FleetManager.Controllers
             };
         }
 
-        private static string NormalizeLookup(string? value)
+        private static DateTime? CalculateExpiry(DateTime? startDate, int years)
+        {
+            return startDate?.AddYears(years);
+        }
+
+        private static string NormalizeText(string? value)
         {
             return (value ?? string.Empty).Trim().ToLowerInvariant();
         }
 
-        private static string BuildOwnerChoice(FleetUserReference user)
+        private static string BuildUserLabel(FleetUserReference user)
         {
             return string.IsNullOrWhiteSpace(user.Email)
                 ? user.DisplayName
@@ -588,12 +574,6 @@ namespace FleetManager.Controllers
             public DateTime? DataPrenotazione { get; set; }
         }
 
-        private sealed class OwnerResolution
-        {
-            public int? OwnerId { get; set; }
-            public string? ErrorMessage { get; set; }
-        }
-
         private sealed class FleetUserReference
         {
             public int Id { get; set; }
@@ -608,7 +588,7 @@ namespace FleetManager.Controllers
             public string Targa { get; set; } = string.Empty;
             public int? PossessoreMatricola { get; set; }
             public string? PossessoreNome { get; set; }
-            public string Gruppo { get; set; } = "E-ONE";
+            public string Gruppo { get; set; } = Gruppo1;
             public int Chilometraggio { get; set; }
             public int FuelLevel { get; set; }
             public string? FuelType { get; set; }

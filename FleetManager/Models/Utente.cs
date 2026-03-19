@@ -34,6 +34,7 @@ namespace FleetManager.Models
         [Display(Name = "Data Registrazione")]
         public DateTime DataRegistrazione { get; set; } = DateTime.Now;
 
+        // Comodo in view e API per evitare di concatenare nome e cognome ogni volta.
         [Display(Name = "Nome Completo")]
         public string NomeCompleto => $"{Nome} {Cognome}";
 

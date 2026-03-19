@@ -1,17 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace FleetManager.Models
 {
     public class Veicolo
     {
-        public enum StatoVeicolo
-        {
-            FuoriServizio,
-            Disponibile,
-            InUso,
-            Manutenzione
-        }
-
         public int VeicoloId { get; set; }
 
         [Required]
@@ -32,16 +24,17 @@ namespace FleetManager.Models
         [StringLength(20)]
         public string Stato { get; set; } = "Disponibile";
 
-        [Range(0, 100)]
-        public int LivelloCarburante { get; set; } = 100;
-        public int Chilometraggio { get; set; }
+        // Nel progetto usiamo 0 = riserva, 1 = medio, 2 = alto.
+        [Range(0, 2)]
+        public int LivelloCarburante { get; set; } = 2;
 
-        public string? Colore { get; set; }
+        public int Chilometraggio { get; set; }
         public string? Carburante { get; set; }
-        public int? Cilindrata { get; set; }
         public string? Gruppo { get; set; }
         public string? ImageUrl { get; set; }
         public DateTime? DataPossesso { get; set; }
+
+        // Salviamo la data iniziale e ricaviamo la scadenza da quella.
         public DateTime? RevisioneInizio { get; set; }
         public DateTime? RevisioneScadenza { get; set; }
         public DateTime? BolloInizio { get; set; }
@@ -57,22 +50,5 @@ namespace FleetManager.Models
         public int? UtentePrenotatoID { get; set; }
         public Utente? UtentePrenotato { get; set; }
         public List<Prenotazione>? Prenotazioni { get; set; }
-
-        public StatoVeicolo GetStatoEnum()
-        {
-            return Stato switch
-            {
-                "FuoriServizio" => StatoVeicolo.FuoriServizio,
-                "Disponibile" => StatoVeicolo.Disponibile,
-                "InUso" => StatoVeicolo.InUso,
-                "Manutenzione" => StatoVeicolo.Manutenzione,
-                _ => StatoVeicolo.Disponibile
-            };
-        }
-
-        public void SetStatoEnum(StatoVeicolo status)
-        {
-            Stato = status.ToString();
-        }
     }
 }

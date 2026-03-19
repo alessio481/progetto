@@ -2,6 +2,7 @@
     const API_BASE = '/api';
     const groups = ['FONDAZIONE SETTORE-1', 'FONDAZIONE SETTORE-2', 'FONDAZIONE SETTORE-3'];
 
+    // Stato minimale del frontend: sessione, auto e utenti per i suggerimenti admin.
     const state = {
         isAdmin: false,
         matricola: '',
@@ -36,6 +37,13 @@
 
         if (response.status === 204) return null;
         return response.json();
+    }
+
+    async function refreshPageData() {
+        await loadCars();
+        populateSearchFilters();
+        renderSummary();
+        renderCars();
     }
 
     function setStatus(message, tone = 'info') {
@@ -191,6 +199,7 @@
         fuelFilter.value = fuels.includes(currentFuel) ? currentFuel : '';
     }
 
+    // I numeri in alto vengono ricalcolati ogni volta sui dati gia filtrati lato backend.
     function renderSummary() {
         const cars = state.cars;
         const inUse = cars.filter((car) => normalizeStatus(car.stato) === 'in uso').length;
@@ -258,6 +267,7 @@
         return '';
     }
 
+    // Il bottone principale per l'utente normale e il toggle uso/non uso.
     function buildUseAction(car, buttonClass) {
         if (!state.isAdmin && canEditCar(car) && !hasMaintenanceRequest(car) && !isInMaintenance(car)) {
             const label = normalizeStatus(car.stato) === 'in uso' ? 'Smetti di usare' : 'Utilizza ora';
@@ -469,6 +479,7 @@
     function buildPayload() {
         updateOwnerHelper();
 
+        // La scadenza non si inserisce a mano: il backend la calcola dalla data iniziale.
         return {
             modello: document.getElementById('mModel').value.trim(),
             targa: document.getElementById('mTarga').value.trim().toUpperCase(),
@@ -524,10 +535,7 @@
                 body: JSON.stringify(payload)
             });
 
-            await loadCars();
-            populateSearchFilters();
-            renderSummary();
-            renderCars();
+            await refreshPageData();
             if (isEdit) {
                 const updatedCar = state.cars.find((item) => Number(item.id) === Number(id));
                 if (updatedCar) {
@@ -553,10 +561,7 @@
 
         try {
             await requestJson(API_BASE + '/fleet/cars/' + Number(id), { method: 'DELETE' });
-            await loadCars();
-            populateSearchFilters();
-            renderSummary();
-            renderCars();
+            await refreshPageData();
             closeModal();
             setStatus('Veicolo eliminato correttamente.');
         } catch (error) {
@@ -571,10 +576,7 @@
 
         try {
             await requestJson(API_BASE + '/fleet/cars/' + Number(id) + '/maintenance-request', { method: 'PATCH' });
-            await loadCars();
-            populateSearchFilters();
-            renderSummary();
-            renderCars();
+            await refreshPageData();
             setStatus('Segnalazione manutenzione inviata.');
         } catch (error) {
             setStatus(error.message || 'Errore durante la segnalazione.', 'error');
@@ -594,10 +596,7 @@
 
         try {
             await requestJson(API_BASE + '/fleet/cars/' + Number(id) + '/use-now', { method: 'PATCH' });
-            await loadCars();
-            populateSearchFilters();
-            renderSummary();
-            renderCars();
+            await refreshPageData();
             setStatus('Stato veicolo aggiornato.');
         } catch (error) {
             setStatus(error.message || 'Errore durante l\'attivazione del veicolo.', 'error');
@@ -607,10 +606,7 @@
     async function approveMaintenance(id) {
         try {
             await requestJson(API_BASE + '/fleet/cars/' + Number(id) + '/maintenance-approval', { method: 'PATCH' });
-            await loadCars();
-            populateSearchFilters();
-            renderSummary();
-            renderCars();
+            await refreshPageData();
             setStatus('Veicolo impostato in manutenzione.');
         } catch (error) {
             setStatus(error.message || 'Errore durante l\'aggiornamento della manutenzione.', 'error');
@@ -625,10 +621,7 @@
 
         try {
             const response = await requestJson(API_BASE + '/fleet/debug/seed', { method: 'POST' });
-            await loadCars();
-            populateSearchFilters();
-            renderSummary();
-            renderCars();
+            await refreshPageData();
             closeDebugMenu();
             setStatus('Dataset demo ripristinato. Veicoli caricati: ' + (response?.inserted || 0) + '.');
         } catch (error) {
@@ -644,10 +637,7 @@
 
         try {
             await requestJson(API_BASE + '/fleet/debug/clear', { method: 'DELETE' });
-            await loadCars();
-            populateSearchFilters();
-            renderSummary();
-            renderCars();
+            await refreshPageData();
             closeDebugMenu();
             setStatus('Parco auto svuotato correttamente.');
         } catch (error) {
