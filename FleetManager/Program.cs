@@ -1,3 +1,4 @@
+using FleetManager;
 using FleetManager.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,12 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await DemoDataSeeder.EnsureReadyAsync(db);
+}
 
 if (!app.Environment.IsDevelopment())
 {

@@ -619,7 +619,7 @@
 
     async function seedDemoData() {
         if (!state.isAdmin) return;
-        if (!confirm('Vuoi inserire un nuovo set di veicoli demo realistici?')) {
+        if (!confirm('Vuoi ripristinare tutto il dataset demo? Verranno ricreati utenti e veicoli fittizi.')) {
             return;
         }
 
@@ -630,7 +630,7 @@
             renderSummary();
             renderCars();
             closeDebugMenu();
-            setStatus((response?.inserted || 0) + ' veicoli demo inseriti correttamente.');
+            setStatus('Dataset demo ripristinato. Veicoli caricati: ' + (response?.inserted || 0) + '.');
         } catch (error) {
             setStatus(error.message || 'Errore durante il caricamento dei dati demo.', 'error');
         }
