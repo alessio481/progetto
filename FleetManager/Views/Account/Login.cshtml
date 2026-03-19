@@ -1,35 +1,45 @@
-﻿@model LoginViewModel
+@model FleetManager.Models.ViewModels.FleetLoginViewModel
 @{
+    Layout = null;
     ViewData["Title"] = "Login";
 }
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fondazione Simonini | Login</title>
+    <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
+</head>
+<body>
+    <main id="loginPanel">
+        <div class="login-header">
+            <img src="https://www.fondazionesimonini.it/imgs/logo.png" alt="Fondazione Simonini" style="max-width: 240px; margin-bottom: 22px;">
+            <p>Fleet Management</p>
+        </div>
 
-<div class="container mt-5" style="max-width: 400px;">
-    <h2>Login</h2>
-    admin: prova@gmail pass: 1234
+        <form asp-action="Login" method="post" style="width:100%;">
+            <input asp-for="Email" placeholder="Email" />
+            <input asp-for="Password" type="password" placeholder="Password" />
+            <button class="btn-login-custom" type="submit">
+                <span class="action-text">Accedi</span>
+            </button>
+        </form>
 
-    @if (!ViewData.ModelState.IsValid)
-    {
-        <div class="alert alert-danger">
-            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        <div class="message-box" data-tone="error">
+            @if (!ViewData.ModelState.IsValid)
             {
-                <div>@error.ErrorMessage</div>
+                foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <div>@error.ErrorMessage</div>
+                }
             }
         </div>
-    }
 
-    <form asp-action="Login" method="post">
-        <div class="mb-3">
-            <label>Email</label>
-            <input asp-for="Email" class="form-control" />
+        <div class="login-hint">
+            Demo utente: sara.verdi@example.com / pass3<br>
+            Demo admin: alessio.picciati@example.com / 1234
         </div>
-
-        <div class="mb-3">
-            <label>Password</label>
-            <input asp-for="Password" type="password" class="form-control" />
-        </div>
-
-        <button type="submit" class="btn btn-primary w-100">
-            Accedi
-        </button>
-    </form>
-</div>
+    </main>
+</body>
+</html>

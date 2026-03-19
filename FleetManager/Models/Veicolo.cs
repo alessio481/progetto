@@ -34,30 +34,30 @@ namespace FleetManager.Models
 
         [Range(0, 100)]
         public int LivelloCarburante { get; set; } = 100;
+        public int Chilometraggio { get; set; }
 
         public string? Colore { get; set; }
         public string? Carburante { get; set; }
         public int? Cilindrata { get; set; }
+        public string? Gruppo { get; set; }
+        public string? ImageUrl { get; set; }
+        public DateTime? DataPossesso { get; set; }
+        public DateTime? RevisioneInizio { get; set; }
+        public DateTime? RevisioneScadenza { get; set; }
+        public DateTime? BolloInizio { get; set; }
+        public DateTime? BolloScadenza { get; set; }
+        public DateTime? TagliandoInizio { get; set; }
+        public DateTime? TagliandoScadenza { get; set; }
+        public DateTime? AssicurazioneInizio { get; set; }
+        public DateTime? AssicurazioneScadenza { get; set; }
 
         public DateTime DataCreazione { get; set; } = DateTime.Now;
         public DateTime? DataAggiornamento { get; set; }
 
-        // 🔧 FOREIGN KEY + Navigation Property
         public int? UtentePrenotatoID { get; set; }
         public Utente? UtentePrenotato { get; set; }
-
-        public int? UtenteManutentoreID { get; set; }
-        public Utente? UtenteManutentore { get; set; }
-
-        // Stato attuale del parcheggio
-        public int? PostoAuto { get; set; }
-
-        // ⭐ Relazioni storiche (navigation properties)
         public List<Prenotazione>? Prenotazioni { get; set; }
-        public List<Segnalazione>? Segnalazioni { get; set; }
-        public List<Manutenzione>? Manutenzioni { get; set; }
 
-        // 🎯 Conversione string <-> enum
         public StatoVeicolo GetStatoEnum()
         {
             return Stato switch

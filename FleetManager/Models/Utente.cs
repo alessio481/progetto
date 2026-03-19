@@ -38,24 +38,5 @@ namespace FleetManager.Models
         public string NomeCompleto => $"{Nome} {Cognome}";
 
         public List<Prenotazione>? Prenotazioni { get; set; }
-        public List<Segnalazione>? Segnalazioni { get; set; }
-        public List<Manutenzione>? Manutenzioni { get; set; }
     }
-
-    public class LoginViewModel
-    {
-        public string Email { get; set; } = "";
-        public string Password { get; set; } = "";
-    }
-
-
-    public class RegisterViewModel
-    {
-        public string Nome { get; set; } = "";
-        public string Cognome { get; set; } = "";
-        public string Email { get; set; } = "";
-        public string Password { get; set; } = "";
-        public DateTime DataNascita { get; set; }
-    }
-
 }

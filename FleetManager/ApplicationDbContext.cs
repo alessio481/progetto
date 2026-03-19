@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
+using FleetManager.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace FleetManager.Models
 {
@@ -11,8 +11,5 @@ namespace FleetManager.Models
         public DbSet<Utente> Utenti { get; set; }
         public DbSet<Veicolo> Veicoli { get; set; }
         public DbSet<Prenotazione> Prenotazioni { get; set; }
-        public DbSet<Segnalazione> Segnalazioni { get; set; }
-        public DbSet<Manutenzione> Manutenzioni { get; set; }
-        public DbSet<DashboardSnapshot> DashboardSnapshots { get; set; }
     }
 }

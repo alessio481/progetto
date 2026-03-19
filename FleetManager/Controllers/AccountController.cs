@@ -1,8 +1,9 @@
-﻿using FleetManager.Models;
+using FleetManager.Models;
+using FleetManager.Models.ViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
-using System;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace FleetManager.Controllers
@@ -16,118 +17,58 @@ namespace FleetManager.Controllers
             _context = context;
         }
 
-        // ====================
-        //  GET: /Account/Login
-        // ====================
+        [HttpGet]
         public IActionResult Login()
         {
-            return View();
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                return RedirectToAction("Index", "Dashboard");
+            }
+
+            return View(new FleetLoginViewModel());
         }
 
-        // ====================
-        //  POST: /Account/Login perchè si va a scrivere
-        // ====================
         [HttpPost]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        public async Task<IActionResult> Login(FleetLoginViewModel model)
         {
             if (!ModelState.IsValid)
-                return View(model);
-
-            // Cerca l'utente per email
-            var utente = _context.Utenti.FirstOrDefault(u => u.Email == model.Email);
-
-            if (utente == null)
             {
-                ModelState.AddModelError("", "Email non trovata.");
                 return View(model);
             }
 
-            // Controllo password (semplice per progetto)
-            if (utente.Password != model.Password)
+            var email = model.Email.Trim();
+            var utente = await _context.Utenti.FirstOrDefaultAsync(u => u.Email == email);
+            if (utente == null || utente.Password != model.Password)
             {
-                ModelState.AddModelError("", "Password errata.");
+                ModelState.AddModelError(string.Empty, "Credenziali non valide.");
                 return View(model);
             }
 
-            // ===========================================
-            // AUTENTICAZIONE CON COOKIE SEMPLICE unica parte difficile
-            // ===========================================
+            var role = string.Equals(utente.Ruolo, "Admin", StringComparison.OrdinalIgnoreCase) ? "admin" : "user";
+            var displayName = string.IsNullOrWhiteSpace(utente.NomeCompleto) ? utente.Email : utente.NomeCompleto;
+
             var claims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, utente.Email),
-                    new Claim(ClaimTypes.NameIdentifier, utente.UtenteID.ToString()),
-                    new Claim(ClaimTypes.Role, utente.Ruolo)
-                };
-
-
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-
-            await HttpContext.SignInAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(identity)
-            );
-
-            if (utente.Ruolo == "Admin")
             {
-                return RedirectToAction("Dashboard", "Admin");
-            }else if (utente.Ruolo == "Driver")
-            {
-                return RedirectToAction("Dashboard", "Driver"); 
-
-            }
-
-            return RedirectToAction("Index", "Home");
-        }
-
-        // ====================
-        //  GET: /Account/Register
-        // ====================
-        public IActionResult Register()
-        {
-            return View();
-        }
-
-        // ====================
-        //  POST: /Account/Register
-        // ====================
-        [HttpPost]
-        public IActionResult Register(RegisterViewModel model)
-        {
-            if (!ModelState.IsValid)
-                return View(model);
-
-            // Controllo email già registrata
-            if (_context.Utenti.Any(u => u.Email == model.Email))
-            {
-                ModelState.AddModelError("", "Email già utilizzata.");
-                return View(model);
-            }
-
-            // CREA UN NUOVO UTENTE
-            var nuovo = new Utente
-            {
-                Nome = model.Nome,
-                Cognome = model.Cognome,
-                Email = model.Email,
-                Password = model.Password, // semplice
-                DataNascita = model.DataNascita,
-                Ruolo = "Driver", // default
-                DataRegistrazione = DateTime.Now
+                new Claim(ClaimTypes.Name, displayName),
+                new Claim(ClaimTypes.NameIdentifier, utente.UtenteID.ToString()),
+                new Claim("matricola", utente.UtenteID.ToString()),
+                new Claim(ClaimTypes.Email, utente.Email),
+                new Claim(ClaimTypes.Role, role)
             };
 
-            _context.Utenti.Add(nuovo);
-            _context.SaveChanges();
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(identity));
 
-            return RedirectToAction("Login");
+            return RedirectToAction("Index", "Dashboard");
         }
 
-        // ====================
-        //  /Account/Logout
-        // ====================
+        [HttpGet]
         public async Task<IActionResult> Logout()
         {
-            await HttpContext.SignOutAsync();
-            return RedirectToAction("Index", "Home");
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Login", "Account");
         }
     }
 }

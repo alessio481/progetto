@@ -1,0 +1,197 @@
+@{
+    Layout = null;
+    ViewData["Title"] = "Dashboard";
+}
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fondazione Simonini | Dashboard</title>
+    <link rel="stylesheet" href="~/css/fleet.css" asp-append-version="true" />
+</head>
+<body>
+    <div id="appShell" style="display:none;">
+        <header>
+            <div class="header-logo-container">
+                <img src="https://www.fondazionesimonini.it/imgs/logo.png" alt="Fondazione Simonini" style="height: 52px;">
+                <div class="header-user" id="headerUser">Sessione attiva</div>
+            </div>
+            <div class="header-title-center">DASHBOARD</div>
+            <div class="header-buttons">
+                <div id="debugMenu" class="debug-menu" style="display:none;">
+                    <button id="btnDebugToggle" type="button" onclick="toggleDebugMenu()">Debug</button>
+                    <div id="debugDropdown" class="debug-dropdown">
+                        <button id="btnSeedData" type="button" onclick="seedDemoData()">Carica Demo</button>
+                        <button id="btnClearData" type="button" onclick="clearDemoData()">Svuota Dati</button>
+                    </div>
+                </div>
+                <button id="btnAddCar" type="button" onclick="openModal('add')">Aggiungi Auto</button>
+                <button type="button" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <div class="container">
+            <div id="statusBox" class="status-box" data-tone="info"></div>
+
+            <div class="toolbar-note">
+                <strong id="carsCountLabel">0 veicoli</strong>
+            </div>
+
+            <section class="search-panel">
+                <div class="search-grid">
+                    <div class="search-field">
+                        <label for="searchInput">Ricerca avanzata</label>
+                        <input id="searchInput" type="search" placeholder="Modello, targa, stato, gruppo, carburante">
+                    </div>
+                    <div class="search-field">
+                        <label for="groupFilter">Gruppo</label>
+                        <select id="groupFilter">
+                            <option value="">Tutti i gruppi</option>
+                        </select>
+                    </div>
+                    <div class="search-field">
+                        <label for="statusFilter">Stato</label>
+                        <select id="statusFilter">
+                            <option value="">Tutti gli stati</option>
+                        </select>
+                    </div>
+                    <div class="search-field">
+                        <label for="ownerFilter">Assegnatario</label>
+                        <input id="ownerFilter" type="text" placeholder="Nome o email">
+                    </div>
+                    <div class="search-field">
+                        <label for="fuelFilter">Carburante</label>
+                        <select id="fuelFilter">
+                            <option value="">Tutti i livelli</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <div class="summary-strip">
+                <div class="summary-card"><span>Veicoli visibili</span><strong id="totalCount">0</strong></div>
+                <div class="summary-card"><span>In uso</span><strong id="inUseCount">0</strong></div>
+                <div class="summary-card"><span>Manutenzione</span><strong id="maintenanceCount">0</strong></div>
+                <div class="summary-card"><span>Gruppi attivi</span><strong id="groupCount">0</strong></div>
+            </div>
+
+            <div id="carsContainer"></div>
+        </div>
+    </div>
+
+    <div id="carModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle" style="color:#00a4ed; margin-bottom:20px; border-bottom:2px solid #00a4ed; padding-bottom:10px;">Dettagli Veicolo</h3>
+            <input type="hidden" id="editId">
+
+            <div class="modal-grid">
+                <div class="modal-field">
+                    <label for="mModel">Modello*</label>
+                    <input type="text" id="mModel">
+                </div>
+                <div class="modal-field">
+                    <label for="mTarga">Targa*</label>
+                    <input type="text" id="mTarga">
+                </div>
+                <div class="modal-field">
+                    <label for="mOwnerName">Assegnatario*</label>
+                    <input type="hidden" id="mOwner">
+                    <input type="text" id="mOwnerName" list="ownerOptions" placeholder="Cerca per nome o email">
+                    <datalist id="ownerOptions"></datalist>
+                    <div id="mOwnerHelp" class="field-help"></div>
+                </div>
+                <div class="modal-field">
+                    <label for="mCompany">Gruppo</label>
+                    <select id="mCompany"></select>
+                </div>
+                <div class="modal-field">
+                    <label for="mKm">Km attuali*</label>
+                    <input type="number" id="mKm" min="0">
+                </div>
+                <div class="modal-field">
+                    <label for="mFuel">Livello carburante</label>
+                    <select id="mFuel">
+                        <option value="2">Alto</option>
+                        <option value="1">Medio</option>
+                        <option value="0">Riserva</option>
+                    </select>
+                </div>
+                <div class="modal-field">
+                    <label for="mFuelType">Tipo carburante</label>
+                    <input type="text" id="mFuelType">
+                </div>
+                <div class="modal-field">
+                    <label for="mStatus">Stato</label>
+                    <select id="mStatus">
+                        <option value="in uso">In uso</option>
+                        <option value="in manutenzione">In manutenzione</option>
+                        <option value="in richiesta manutenzione">In richiesta manutenzione</option>
+                        <option value="non in uso">Non in uso</option>
+                    </select>
+                </div>
+                <div class="modal-field">
+                    <label for="mPossesso">Data possesso</label>
+                    <input type="date" id="mPossesso">
+                </div>
+                <div class="modal-field">
+                    <label for="mImg">URL foto</label>
+                    <input type="text" id="mImg">
+                </div>
+            </div>
+
+            <details class="events-section" open>
+                <summary class="section-title">Scadenze</summary>
+                <div class="deadline-overview">
+                    <div class="deadline-card">
+                        <strong>Revisione</strong>
+                        <span>Inizio <b id="vRevisioneInizio">-</b></span>
+                        <span>Scadenza <b id="vRevisioneScadenza">-</b></span>
+                    </div>
+                    <div class="deadline-card">
+                        <strong>Bollo</strong>
+                        <span>Inizio <b id="vBolloInizio">-</b></span>
+                        <span>Scadenza <b id="vBolloScadenza">-</b></span>
+                    </div>
+                    <div class="deadline-card">
+                        <strong>Tagliando</strong>
+                        <span>Inizio <b id="vTagliandoInizio">-</b></span>
+                        <span>Scadenza <b id="vTagliandoScadenza">-</b></span>
+                    </div>
+                    <div class="deadline-card">
+                        <strong>Assicurazione</strong>
+                        <span>Inizio <b id="vAssicurazioneInizio">-</b></span>
+                        <span>Scadenza <b id="vAssicurazioneScadenza">-</b></span>
+                    </div>
+                </div>
+                <div class="modal-grid events-grid">
+                    <div class="modal-field">
+                        <label for="mRevisioneInizio">Revisione inizio</label>
+                        <input type="date" id="mRevisioneInizio">
+                    </div>
+                    <div class="modal-field">
+                        <label for="mBolloInizio">Bollo inizio</label>
+                        <input type="date" id="mBolloInizio">
+                    </div>
+                    <div class="modal-field">
+                        <label for="mTagliandoInizio">Tagliando inizio</label>
+                        <input type="date" id="mTagliandoInizio">
+                    </div>
+                    <div class="modal-field">
+                        <label for="mAssicurazioneInizio">Assicurazione inizio</label>
+                        <input type="date" id="mAssicurazioneInizio">
+                    </div>
+                </div>
+            </details>
+
+            <div class="modal-footer">
+                <button id="btnDelete" class="btn-delete" type="button" onclick="deleteCar()">Elimina</button>
+                <button class="btn-cancel" type="button" onclick="closeModal()">Chiudi</button>
+                <button class="btn-save" type="button" onclick="saveCar()">Salva</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/js/fleet.js" asp-append-version="true"></script>
+</body>
+</html>
