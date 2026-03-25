@@ -1,7 +1,7 @@
-@model FleetManager.Models.ViewModels.DashboardCarFormViewModel
+@model FleetManager.Models.ViewModels.FormVeicoloViewModel
 @{
     Layout = null;
-    ViewData["Title"] = Model.IsCreate ? "Nuovo Veicolo" : "Modifica Veicolo";
+    ViewData["Title"] = Model.ECreazione ? "Nuovo Veicolo" : "Modifica Veicolo";
 }
 <!DOCTYPE html>
 <html lang="it">
@@ -20,7 +20,7 @@
             </div>
             <div class="header-title-center">VEICOLO</div>
             <div class="header-buttons">
-                <a class="header-link-button" href="@Model.ReturnUrl">Torna alla dashboard</a>
+                <a class="header-link-button" href="@Model.UrlRitorno">Torna alla dashboard</a>
                 <a class="header-link-button" asp-controller="Account" asp-action="Logout">Logout</a>
             </div>
         </header>
@@ -28,15 +28,16 @@
         <div class="container">
             <div class="edit-shell">
                 <section class="edit-panel">
-                    <h1>@(Model.IsCreate ? "Nuovo veicolo" : "Modifica veicolo")</h1>
-                    <p class="edit-subtitle">Form classico MVC: compili i campi e salvi con un normale `POST`.</p>
+                    <h1>@(Model.ECreazione ? "Nuovo veicolo" : "Modifica veicolo")</h1>
+                    <p class="edit-subtitle">Pagina MVC classica: leggi i campi, modifichi e salvi con un normale POST.</p>
 
-                    <form asp-action="Save" method="post" class="edit-form">
+                    @* Tutta la modifica del veicolo passa da questo form. *@
+                    <form asp-action="Salva" method="post" class="edit-form">
                         @Html.AntiForgeryToken()
                         <input asp-for="Id" type="hidden" />
-                        <input asp-for="IsCreate" type="hidden" />
-                        <input asp-for="IsAdmin" type="hidden" />
-                        <input asp-for="ReturnUrl" type="hidden" />
+                        <input asp-for="ECreazione" type="hidden" />
+                        <input asp-for="EAdmin" type="hidden" />
+                        <input asp-for="UrlRitorno" type="hidden" />
 
                         <div asp-validation-summary="ModelOnly" class="validation-box"></div>
 
@@ -50,24 +51,24 @@
                                 <input asp-for="Targa" />
                             </div>
 
-                            @if (Model.IsAdmin)
+                            @if (Model.EAdmin)
                             {
                                 <div class="modal-field">
-                                    <label asp-for="OwnerId">Assegnatario</label>
-                                    <select asp-for="OwnerId">
+                                    <label asp-for="IdAssegnatario">Assegnatario</label>
+                                    <select asp-for="IdAssegnatario">
                                         <option value="">Non assegnata</option>
-                                        @foreach (var owner in Model.OwnerOptions)
+                                        @foreach (var opzione in Model.OpzioniAssegnatario)
                                         {
-                                            <option value="@owner.Value">@owner.Label</option>
+                                            <option value="@opzione.Valore">@opzione.Testo</option>
                                         }
                                     </select>
                                 </div>
                                 <div class="modal-field">
                                     <label asp-for="Gruppo">Gruppo</label>
                                     <select asp-for="Gruppo">
-                                        @foreach (var group in Model.GroupOptions)
+                                        @foreach (var opzione in Model.OpzioniGruppo)
                                         {
-                                            <option value="@group.Value">@group.Label</option>
+                                            <option value="@opzione.Valore">@opzione.Testo</option>
                                         }
                                     </select>
                                 </div>
@@ -78,27 +79,27 @@
                                 <input asp-for="Chilometraggio" type="number" min="0" />
                             </div>
                             <div class="modal-field">
-                                <label asp-for="FuelLevel">Livello carburante</label>
-                                <select asp-for="FuelLevel">
-                                    @foreach (var fuel in Model.FuelOptions)
+                                <label asp-for="LivelloCarburante">Livello carburante</label>
+                                <select asp-for="LivelloCarburante">
+                                    @foreach (var opzione in Model.OpzioniCarburante)
                                     {
-                                        <option value="@fuel.Value">@fuel.Label</option>
+                                        <option value="@opzione.Valore">@opzione.Testo</option>
                                     }
                                 </select>
                             </div>
                             <div class="modal-field">
-                                <label asp-for="FuelType">Tipo carburante</label>
-                                <input asp-for="FuelType" />
+                                <label asp-for="TipoCarburante">Tipo carburante</label>
+                                <input asp-for="TipoCarburante" />
                             </div>
 
-                            @if (Model.IsAdmin)
+                            @if (Model.EAdmin)
                             {
                                 <div class="modal-field">
                                     <label asp-for="Stato">Stato</label>
                                     <select asp-for="Stato">
-                                        @foreach (var status in Model.StatusOptions)
+                                        @foreach (var opzione in Model.OpzioniStato)
                                         {
-                                            <option value="@status.Value">@status.Label</option>
+                                            <option value="@opzione.Valore">@opzione.Testo</option>
                                         }
                                     </select>
                                 </div>
@@ -109,8 +110,8 @@
                                 <input asp-for="DataPossesso" type="date" />
                             </div>
                             <div class="modal-field">
-                                <label asp-for="ImageUrl">URL foto</label>
-                                <input asp-for="ImageUrl" />
+                                <label asp-for="UrlImmagine">URL foto</label>
+                                <input asp-for="UrlImmagine" />
                             </div>
                         </div>
 
@@ -137,17 +138,17 @@
                         </section>
 
                         <div class="modal-footer">
-                            <a class="btn-cancel link-button" href="@Model.ReturnUrl">Annulla</a>
+                            <a class="btn-cancel link-button" href="@Model.UrlRitorno">Annulla</a>
                             <button class="btn-save" type="submit">Salva</button>
                         </div>
                     </form>
 
-                    @if (Model.IsAdmin && !Model.IsCreate && Model.Id.HasValue)
+                    @if (Model.EAdmin && !Model.ECreazione && Model.Id.HasValue)
                     {
-                        <form asp-action="Delete" method="post" class="delete-form">
+                        <form asp-action="Elimina" method="post" class="delete-form">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="id" value="@Model.Id" />
-                            <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                            <input type="hidden" name="urlRitorno" value="@Model.UrlRitorno" />
                             <button class="btn-delete" type="submit">Elimina veicolo</button>
                         </form>
                     }

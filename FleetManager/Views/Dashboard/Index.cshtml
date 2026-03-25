@@ -1,4 +1,4 @@
-@model FleetManager.Models.ViewModels.DashboardIndexViewModel
+@model FleetManager.Models.ViewModels.DashboardPaginaViewModel
 @{
     Layout = null;
     ViewData["Title"] = "Dashboard";
@@ -16,58 +16,59 @@
         <header>
             <div class="header-logo-container">
                 <img src="https://www.fondazionesimonini.it/imgs/logo.png" alt="Fondazione Simonini" style="height: 52px;">
-                <div class="header-user">@Model.CurrentUserName @(Model.IsAdmin ? "| Admin" : "| Utente")</div>
+                <div class="header-user">@Model.NomeUtenteCorrente @(Model.EAdmin ? "| Admin" : "| Utente")</div>
             </div>
             <div class="header-title-center">DASHBOARD</div>
             <div class="header-buttons">
-                @if (Model.IsAdmin)
+                @if (Model.EAdmin)
                 {
                     <details class="debug-menu">
                         <summary>Debug</summary>
                         <div class="debug-dropdown server-dropdown">
-                            <form asp-action="ResetDemo" method="post">
+                            <form asp-action="RipristinaDemo" method="post">
                                 @Html.AntiForgeryToken()
-                                <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                                <input type="hidden" name="urlRitorno" value="@Model.UrlRitorno" />
                                 <button type="submit">Ripristina Demo</button>
                             </form>
-                            <form asp-action="ClearDemo" method="post">
+                            <form asp-action="SvuotaDatiDemo" method="post">
                                 @Html.AntiForgeryToken()
-                                <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                                <input type="hidden" name="urlRitorno" value="@Model.UrlRitorno" />
                                 <button type="submit">Svuota Dati</button>
                             </form>
                         </div>
                     </details>
-                    <a class="header-link-button" asp-action="Create" asp-route-returnUrl="@Model.ReturnUrl">Aggiungi Auto</a>
+                    <a class="header-link-button" asp-action="Crea" asp-route-urlRitorno="@Model.UrlRitorno">Aggiungi Auto</a>
                 }
                 <a class="header-link-button" asp-controller="Account" asp-action="Logout">Logout</a>
             </div>
         </header>
 
         <div class="container">
-            @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+            @if (!string.IsNullOrWhiteSpace(Model.MessaggioOperazione))
             {
-                <div class="status-box" style="display:block;">@Model.StatusMessage</div>
+                <div class="status-box" style="display:block;">@Model.MessaggioOperazione</div>
             }
 
-            @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+            @if (!string.IsNullOrWhiteSpace(Model.MessaggioErrore))
             {
-                <div class="status-box" data-tone="error" style="display:block;">@Model.ErrorMessage</div>
+                <div class="status-box" data-tone="error" style="display:block;">@Model.MessaggioErrore</div>
             }
 
             <div class="toolbar-note">
-                <strong>@Model.TotalCount @(Model.TotalCount == 1 ? "veicolo" : "veicoli")</strong>
+                <strong>@Model.TotaleVeicoli @(Model.TotaleVeicoli == 1 ? "veicolo" : "veicoli")</strong>
             </div>
 
-            <details class="search-panel">
+            @* Filtri semplici passati in GET: il codice resta facile da seguire. *@
+            <details class="search-panel" @(Model.Filtri.CiSonoFiltriAttivi ? "open" : null)>
                 <summary class="search-summary">Ricerca avanzata</summary>
                 <form asp-action="Index" method="get" class="search-grid">
                     <div class="search-field">
-                        <label asp-for="Filters.Search">Ricerca</label>
-                        <input asp-for="Filters.Search" placeholder="Modello, targa, stato, gruppo, carburante" />
+                        <label asp-for="Filtri.Ricerca">Ricerca</label>
+                        <input asp-for="Filtri.Ricerca" placeholder="Modello, targa, stato, gruppo, carburante" />
                     </div>
                     <div class="search-field">
-                        <label asp-for="Filters.Group">Gruppo</label>
-                        <select asp-for="Filters.Group">
+                        <label asp-for="Filtri.Gruppo">Gruppo</label>
+                        <select asp-for="Filtri.Gruppo">
                             <option value="">Tutti i gruppi</option>
                             <option value="FONDAZIONE SETTORE-1">FONDAZIONE SETTORE-1</option>
                             <option value="FONDAZIONE SETTORE-2">FONDAZIONE SETTORE-2</option>
@@ -75,8 +76,8 @@
                         </select>
                     </div>
                     <div class="search-field">
-                        <label asp-for="Filters.Status">Stato</label>
-                        <select asp-for="Filters.Status">
+                        <label asp-for="Filtri.Stato">Stato</label>
+                        <select asp-for="Filtri.Stato">
                             <option value="">Tutti gli stati</option>
                             <option value="non in uso">Non in uso</option>
                             <option value="in uso">In uso</option>
@@ -85,12 +86,12 @@
                         </select>
                     </div>
                     <div class="search-field">
-                        <label asp-for="Filters.Owner">Assegnatario</label>
-                        <input asp-for="Filters.Owner" placeholder="Nome assegnatario" />
+                        <label asp-for="Filtri.Assegnatario">Assegnatario</label>
+                        <input asp-for="Filtri.Assegnatario" placeholder="Nome assegnatario" />
                     </div>
                     <div class="search-field">
-                        <label asp-for="Filters.FuelLevel">Carburante</label>
-                        <select asp-for="Filters.FuelLevel">
+                        <label asp-for="Filtri.LivelloCarburante">Carburante</label>
+                        <select asp-for="Filtri.LivelloCarburante">
                             <option value="">Tutti i livelli</option>
                             <option value="2">Alto</option>
                             <option value="1">Medio</option>
@@ -105,82 +106,82 @@
             </details>
 
             <div class="summary-strip">
-                <div class="summary-card"><span>Veicoli visibili</span><strong>@Model.TotalCount</strong></div>
-                <div class="summary-card"><span>In uso</span><strong>@Model.InUseCount</strong></div>
-                <div class="summary-card"><span>Manutenzione</span><strong>@Model.MaintenanceCount</strong></div>
+                <div class="summary-card"><span>Veicoli visibili</span><strong>@Model.TotaleVeicoli</strong></div>
+                <div class="summary-card"><span>In uso</span><strong>@Model.TotaleInUso</strong></div>
+                <div class="summary-card"><span>Manutenzione</span><strong>@Model.TotaleManutenzione</strong></div>
             </div>
 
-            @if (!Model.Cars.Any())
+            @if (!Model.Veicoli.Any())
             {
                 <div class="empty-state">Nessun veicolo trovato con i filtri correnti.</div>
             }
             else
             {
-                foreach (var group in Model.Cars.GroupBy(car => car.Gruppo))
+                foreach (var gruppo in Model.Veicoli.GroupBy(veicolo => veicolo.Gruppo))
                 {
-                    <h3 class="group-header title-@group.Key.ToLowerInvariant().Replace(" ", "-")">@group.Key</h3>
+                    <h3 class="group-header title-@gruppo.Key.ToLowerInvariant().Replace(" ", "-")">@gruppo.Key</h3>
 
                     <div class="cars-grid">
-                        @foreach (var car in group)
+                        @foreach (var veicolo in gruppo)
                         {
-                            <div class="car-card card-@car.Gruppo.ToLowerInvariant().Replace(" ", "-")">
-                                <div class="car-image" style="background-image:url('@car.ImageUrl')"></div>
+                            <div class="car-card card-@veicolo.Gruppo.ToLowerInvariant().Replace(" ", "-")">
+                                <div class="car-image" style="background-image:url('@veicolo.UrlImmagine')"></div>
                                 <div class="car-info">
-                                    <div class="car-model">@car.Modello</div>
-                                    <div class="car-brand status-@car.Stato.Replace(" ", "-")">@car.Stato</div>
-                                    <div class="car-targa">Targa: @car.Targa</div>
-                                    <div class="car-detail"><span>Assegnatario:</span><strong>@(string.IsNullOrWhiteSpace(car.OwnerName) ? "-" : car.OwnerName)</strong></div>
-                                    <div class="car-detail"><span>KM:</span><strong>@car.Chilometraggio.ToString("N0", new System.Globalization.CultureInfo("it-IT"))</strong></div>
-                                    <div class="car-detail"><span>Carburante:</span><strong>@(car.FuelLevel == 2 ? "Alto" : car.FuelLevel == 1 ? "Medio" : "Riserva")</strong></div>
+                                    <div class="car-model">@veicolo.Modello</div>
+                                    <div class="car-brand status-@veicolo.Stato.Replace(" ", "-")">@veicolo.Stato</div>
+                                    <div class="car-targa">Targa: @veicolo.Targa</div>
+                                    <div class="car-detail"><span>Assegnatario:</span><strong>@(string.IsNullOrWhiteSpace(veicolo.NomeAssegnatario) ? "-" : veicolo.NomeAssegnatario)</strong></div>
+                                    <div class="car-detail"><span>KM:</span><strong>@veicolo.Chilometraggio.ToString("N0", new System.Globalization.CultureInfo("it-IT"))</strong></div>
+                                    <div class="car-detail"><span>Carburante:</span><strong>@(veicolo.LivelloCarburante == 2 ? "Alto" : veicolo.LivelloCarburante == 1 ? "Medio" : "Riserva")</strong></div>
 
                                     <details class="card-details">
                                         <summary>Scadenze</summary>
                                         <div class="card-deadlines">
-                                            <div><span>Revisione</span><strong>@FormatDates(car.RevisioneInizio, car.RevisioneScadenza)</strong></div>
-                                            <div><span>Bollo</span><strong>@FormatDates(car.BolloInizio, car.BolloScadenza)</strong></div>
-                                            <div><span>Tagliando</span><strong>@FormatDates(car.TagliandoInizio, car.TagliandoScadenza)</strong></div>
-                                            <div><span>Assicurazione</span><strong>@FormatDates(car.AssicurazioneInizio, car.AssicurazioneScadenza)</strong></div>
+                                            <div><span>Revisione</span><strong>@FormattaPeriodo(veicolo.RevisioneInizio, veicolo.RevisioneScadenza)</strong></div>
+                                            <div><span>Bollo</span><strong>@FormattaPeriodo(veicolo.BolloInizio, veicolo.BolloScadenza)</strong></div>
+                                            <div><span>Tagliando</span><strong>@FormattaPeriodo(veicolo.TagliandoInizio, veicolo.TagliandoScadenza)</strong></div>
+                                            <div><span>Assicurazione</span><strong>@FormattaPeriodo(veicolo.AssicurazioneInizio, veicolo.AssicurazioneScadenza)</strong></div>
                                         </div>
                                     </details>
 
                                     <div class="card-actions">
-                                        @if (car.CanUseNow)
+                                        @if (veicolo.PuoUsareOra)
                                         {
-                                            <form asp-action="UseNow" method="post" class="inline-form">
+                                            <form asp-action="UsaOra" method="post" class="inline-form">
                                                 @Html.AntiForgeryToken()
-                                                <input type="hidden" name="id" value="@car.Id" />
-                                                <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
-                                                <button type="submit" class="btn-use-now btn-@car.Gruppo.ToLowerInvariant().Replace(" ", "-")">
-                                                    @(car.Stato == "in uso" ? "Smetti di usare" : "Utilizza ora")
+                                                <input type="hidden" name="id" value="@veicolo.Id" />
+                                                <input type="hidden" name="urlRitorno" value="@Model.UrlRitorno" />
+                                                <button type="submit" class="btn-use-now btn-@veicolo.Gruppo.ToLowerInvariant().Replace(" ", "-")">
+                                                    @(veicolo.Stato == "in uso" ? "Smetti di usare" : "Utilizza ora")
                                                 </button>
                                             </form>
                                         }
 
-                                        @if (car.CanRequestMaintenance)
+                                        @if (veicolo.PuoSegnalareManutenzione)
                                         {
-                                            <form asp-action="RequestMaintenance" method="post" class="inline-form">
+                                            <form asp-action="SegnalaManutenzione" method="post" class="inline-form">
                                                 @Html.AntiForgeryToken()
-                                                <input type="hidden" name="id" value="@car.Id" />
-                                                <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                                                <input type="hidden" name="id" value="@veicolo.Id" />
+                                                <input type="hidden" name="urlRitorno" value="@Model.UrlRitorno" />
                                                 <button type="submit" class="btn-secondary-action">Segnala manutenzione</button>
                                             </form>
                                         }
 
-                                        @if (car.CanApproveMaintenance)
+                                        @if (veicolo.PuoApprovareManutenzione)
                                         {
-                                            <form asp-action="ApproveMaintenance" method="post" class="inline-form">
+                                            <form asp-action="ApprovaManutenzione" method="post" class="inline-form">
                                                 @Html.AntiForgeryToken()
-                                                <input type="hidden" name="id" value="@car.Id" />
-                                                <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                                                <input type="hidden" name="id" value="@veicolo.Id" />
+                                                <input type="hidden" name="urlRitorno" value="@Model.UrlRitorno" />
                                                 <button type="submit" class="btn-secondary-action">Metti in manutenzione</button>
                                             </form>
                                         }
 
-                                        <a class="btn-edit btn-@car.Gruppo.ToLowerInvariant().Replace(" ", "-")"
-                                           asp-action="Edit"
-                                           asp-route-id="@car.Id"
-                                           asp-route-returnUrl="@Model.ReturnUrl">
-                                            @(car.CanEdit ? "Modifica" : "Dettagli")
+                                        <a class="btn-edit btn-@veicolo.Gruppo.ToLowerInvariant().Replace(" ", "-")"
+                                           asp-action="Modifica"
+                                           asp-route-id="@veicolo.Id"
+                                           asp-route-urlRitorno="@Model.UrlRitorno">
+                                            @(veicolo.PuoModificare ? "Modifica" : "Dettagli")
                                         </a>
                                     </div>
                                 </div>
@@ -195,15 +196,15 @@
 </html>
 
 @functions {
-    private string FormatDates(DateTime? startDate, DateTime? endDate)
+    private string FormattaPeriodo(DateTime? dataInizio, DateTime? dataFine)
     {
-        if (!startDate.HasValue && !endDate.HasValue)
+        if (!dataInizio.HasValue && !dataFine.HasValue)
         {
             return "-";
         }
 
-        var start = startDate?.ToString("dd/MM/yyyy") ?? "-";
-        var end = endDate?.ToString("dd/MM/yyyy") ?? "-";
-        return start + " - " + end;
+        var inizio = dataInizio?.ToString("dd/MM/yyyy") ?? "-";
+        var fine = dataFine?.ToString("dd/MM/yyyy") ?? "-";
+        return inizio + " - " + fine;
     }
 }

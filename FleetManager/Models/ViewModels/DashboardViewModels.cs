@@ -2,44 +2,51 @@ using System.ComponentModel.DataAnnotations;
 
 namespace FleetManager.Models.ViewModels
 {
-    public class DashboardIndexViewModel
+    public class DashboardPaginaViewModel
     {
-        // Un solo oggetto contiene tutto quello che serve alla pagina dashboard.
-        public bool IsAdmin { get; set; }
-        public string CurrentUserName { get; set; } = string.Empty;
-        public string? StatusMessage { get; set; }
-        public string? ErrorMessage { get; set; }
-        public string ReturnUrl { get; set; } = "/Dashboard";
-        public DashboardFiltersViewModel Filters { get; set; } = new();
-        public List<DashboardCarCardViewModel> Cars { get; set; } = new();
+        // Questa classe contiene tutto quello che serve alla pagina dashboard.
+        public bool EAdmin { get; set; }
+        public string NomeUtenteCorrente { get; set; } = string.Empty;
+        public string? MessaggioOperazione { get; set; }
+        public string? MessaggioErrore { get; set; }
+        public string UrlRitorno { get; set; } = "/Dashboard";
+        public FiltriDashboardViewModel Filtri { get; set; } = new();
+        public List<SchedaVeicoloViewModel> Veicoli { get; set; } = new();
 
-        public int TotalCount => Cars.Count;
-        public int InUseCount => Cars.Count(car => car.Stato == "in uso");
-        public int MaintenanceCount => Cars.Count(car => car.Stato.Contains("manutenzione"));
+        public int TotaleVeicoli => Veicoli.Count;
+        public int TotaleInUso => Veicoli.Count(veicolo => veicolo.Stato == "in uso");
+        public int TotaleManutenzione => Veicoli.Count(veicolo => veicolo.Stato.Contains("manutenzione"));
     }
 
-    public class DashboardFiltersViewModel
+    public class FiltriDashboardViewModel
     {
-        public string? Search { get; set; }
-        public string? Group { get; set; }
-        public string? Status { get; set; }
-        public string? Owner { get; set; }
-        public int? FuelLevel { get; set; }
+        public string? Ricerca { get; set; }
+        public string? Gruppo { get; set; }
+        public string? Stato { get; set; }
+        public string? Assegnatario { get; set; }
+        public int? LivelloCarburante { get; set; }
+
+        public bool CiSonoFiltriAttivi =>
+            !string.IsNullOrWhiteSpace(Ricerca) ||
+            !string.IsNullOrWhiteSpace(Gruppo) ||
+            !string.IsNullOrWhiteSpace(Stato) ||
+            !string.IsNullOrWhiteSpace(Assegnatario) ||
+            LivelloCarburante.HasValue;
     }
 
-    public class DashboardCarCardViewModel
+    public class SchedaVeicoloViewModel
     {
         public int Id { get; set; }
         public string Modello { get; set; } = string.Empty;
         public string Targa { get; set; } = string.Empty;
         public string Stato { get; set; } = "non in uso";
         public string Gruppo { get; set; } = string.Empty;
-        public string? OwnerName { get; set; }
-        public int? OwnerId { get; set; }
+        public string? NomeAssegnatario { get; set; }
+        public int? IdAssegnatario { get; set; }
         public int Chilometraggio { get; set; }
-        public int FuelLevel { get; set; }
-        public string? FuelType { get; set; }
-        public string ImageUrl { get; set; } = string.Empty;
+        public int LivelloCarburante { get; set; }
+        public string? TipoCarburante { get; set; }
+        public string UrlImmagine { get; set; } = string.Empty;
         public DateTime? DataPossesso { get; set; }
         public DateTime? RevisioneInizio { get; set; }
         public DateTime? RevisioneScadenza { get; set; }
@@ -49,19 +56,19 @@ namespace FleetManager.Models.ViewModels
         public DateTime? TagliandoScadenza { get; set; }
         public DateTime? AssicurazioneInizio { get; set; }
         public DateTime? AssicurazioneScadenza { get; set; }
-        public bool CanEdit { get; set; }
-        public bool CanUseNow { get; set; }
-        public bool CanRequestMaintenance { get; set; }
-        public bool CanApproveMaintenance { get; set; }
+        public bool PuoModificare { get; set; }
+        public bool PuoUsareOra { get; set; }
+        public bool PuoSegnalareManutenzione { get; set; }
+        public bool PuoApprovareManutenzione { get; set; }
     }
 
-    public class DashboardCarFormViewModel
+    public class FormVeicoloViewModel
     {
-        // Questo model serve sia per creare sia per modificare un veicolo.
+        // Questo model serve sia per la creazione sia per la modifica.
         public int? Id { get; set; }
-        public bool IsAdmin { get; set; }
-        public bool IsCreate { get; set; }
-        public string ReturnUrl { get; set; } = "/Dashboard";
+        public bool EAdmin { get; set; }
+        public bool ECreazione { get; set; }
+        public string UrlRitorno { get; set; } = "/Dashboard";
 
         [Required]
         public string Modello { get; set; } = string.Empty;
@@ -70,7 +77,7 @@ namespace FleetManager.Models.ViewModels
         public string Targa { get; set; } = string.Empty;
 
         [Display(Name = "Assegnatario")]
-        public int? OwnerId { get; set; }
+        public int? IdAssegnatario { get; set; }
 
         public string Gruppo { get; set; } = "FONDAZIONE SETTORE-1";
 
@@ -78,26 +85,26 @@ namespace FleetManager.Models.ViewModels
         public int Chilometraggio { get; set; }
 
         [Range(0, 2)]
-        public int FuelLevel { get; set; } = 2;
+        public int LivelloCarburante { get; set; } = 2;
 
-        public string? FuelType { get; set; }
+        public string? TipoCarburante { get; set; }
         public string Stato { get; set; } = "non in uso";
         public DateTime? DataPossesso { get; set; }
-        public string? ImageUrl { get; set; }
+        public string? UrlImmagine { get; set; }
         public DateTime? RevisioneInizio { get; set; }
         public DateTime? BolloInizio { get; set; }
         public DateTime? TagliandoInizio { get; set; }
         public DateTime? AssicurazioneInizio { get; set; }
 
-        public List<SelectItemViewModel> OwnerOptions { get; set; } = new();
-        public List<SelectItemViewModel> GroupOptions { get; set; } = new();
-        public List<SelectItemViewModel> FuelOptions { get; set; } = new();
-        public List<SelectItemViewModel> StatusOptions { get; set; } = new();
+        public List<OpzioneSelectViewModel> OpzioniAssegnatario { get; set; } = new();
+        public List<OpzioneSelectViewModel> OpzioniGruppo { get; set; } = new();
+        public List<OpzioneSelectViewModel> OpzioniCarburante { get; set; } = new();
+        public List<OpzioneSelectViewModel> OpzioniStato { get; set; } = new();
     }
 
-    public class SelectItemViewModel
+    public class OpzioneSelectViewModel
     {
-        public string Value { get; set; } = string.Empty;
-        public string Label { get; set; } = string.Empty;
+        public string Valore { get; set; } = string.Empty;
+        public string Testo { get; set; } = string.Empty;
     }
 }

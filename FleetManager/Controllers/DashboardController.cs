@@ -22,217 +22,217 @@ namespace FleetManager.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index([FromQuery] DashboardFiltersViewModel filters)
+        public async Task<IActionResult> Index([FromQuery] FiltriDashboardViewModel filtri)
         {
-            // La dashboard ora viene costruita tutta lato server.
-            var userId = GetCurrentUserId();
-            if (userId == null)
+            // La dashboard viene costruita tutta lato server.
+            var idUtenteCorrente = OttieniIdUtenteCorrente();
+            if (idUtenteCorrente == null)
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            var isAdmin = User.IsInRole("admin");
-            var currentUser = await _context.Utenti
+            var eAdmin = User.IsInRole("admin");
+            var utenteCorrente = await _context.Utenti
                 .AsNoTracking()
-                .FirstOrDefaultAsync(user => user.UtenteID == userId.Value);
+                .FirstOrDefaultAsync(utente => utente.UtenteID == idUtenteCorrente.Value);
 
-            if (currentUser == null)
+            if (utenteCorrente == null)
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            var cars = await _context.Veicoli
+            var veicoliDb = await _context.Veicoli
                 .AsNoTracking()
-                .Include(car => car.UtentePrenotato)
-                .OrderBy(car => car.Gruppo)
-                .ThenBy(car => car.Marca)
-                .ThenBy(car => car.Modello)
+                .Include(veicolo => veicolo.UtentePrenotato)
+                .OrderBy(veicolo => veicolo.Gruppo)
+                .ThenBy(veicolo => veicolo.Marca)
+                .ThenBy(veicolo => veicolo.Modello)
                 .ToListAsync();
 
-            var model = new DashboardIndexViewModel
+            var model = new DashboardPaginaViewModel
             {
-                IsAdmin = isAdmin,
-                CurrentUserName = currentUser.NomeCompleto,
-                StatusMessage = TempData["StatusMessage"]?.ToString(),
-                ErrorMessage = TempData["ErrorMessage"]?.ToString(),
-                ReturnUrl = BuildReturnUrl(),
-                Filters = filters
+                EAdmin = eAdmin,
+                NomeUtenteCorrente = utenteCorrente.NomeCompleto,
+                MessaggioOperazione = TempData["StatusMessage"]?.ToString(),
+                MessaggioErrore = TempData["ErrorMessage"]?.ToString(),
+                UrlRitorno = CostruisciUrlRitorno(),
+                Filtri = filtri
             };
 
-            model.Cars = cars
-                .Where(car => isAdmin || car.UtentePrenotatoID == userId.Value)
-                .Where(car => MatchesFilters(car, filters))
-                .Select(car => ToCardViewModel(car, isAdmin, userId.Value))
+            model.Veicoli = veicoliDb
+                .Where(veicolo => eAdmin || veicolo.UtentePrenotatoID == idUtenteCorrente.Value)
+                .Where(veicolo => RispettaFiltri(veicolo, filtri))
+                .Select(veicolo => CreaSchedaVeicolo(veicolo, eAdmin, idUtenteCorrente.Value))
                 .ToList();
 
             return View(model);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Create(string? returnUrl)
+        public async Task<IActionResult> Crea(string? urlRitorno)
         {
             if (!User.IsInRole("admin"))
             {
                 return Forbid();
             }
 
-            var model = await BuildCarFormAsync(new DashboardCarFormViewModel
+            var model = await PreparaFormVeicoloAsync(new FormVeicoloViewModel
             {
-                IsAdmin = true,
-                IsCreate = true,
-                ReturnUrl = NormalizeReturnUrl(returnUrl)
+                EAdmin = true,
+                ECreazione = true,
+                UrlRitorno = NormalizzaUrlRitorno(urlRitorno)
             });
 
             return View("Edit", model);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Edit(int id, string? returnUrl)
+        public async Task<IActionResult> Modifica(int id, string? urlRitorno)
         {
-            var userId = GetCurrentUserId();
-            if (userId == null)
+            var idUtenteCorrente = OttieniIdUtenteCorrente();
+            if (idUtenteCorrente == null)
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            var isAdmin = User.IsInRole("admin");
-            var car = await _context.Veicoli
+            var eAdmin = User.IsInRole("admin");
+            var veicolo = await _context.Veicoli
                 .AsNoTracking()
                 .Include(item => item.UtentePrenotato)
                 .FirstOrDefaultAsync(item => item.VeicoloId == id);
 
-            if (car == null)
+            if (veicolo == null)
             {
                 TempData["ErrorMessage"] = "Veicolo non trovato.";
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
 
-            if (!isAdmin && car.UtentePrenotatoID != userId.Value)
+            if (!eAdmin && veicolo.UtentePrenotatoID != idUtenteCorrente.Value)
             {
                 return Forbid();
             }
 
-            var model = await BuildCarFormAsync(new DashboardCarFormViewModel
+            var model = await PreparaFormVeicoloAsync(new FormVeicoloViewModel
             {
-                Id = car.VeicoloId,
-                IsAdmin = isAdmin,
-                IsCreate = false,
-                ReturnUrl = NormalizeReturnUrl(returnUrl),
-                Modello = BuildModelLabel(car),
-                Targa = car.Targa,
-                OwnerId = car.UtentePrenotatoID,
-                Gruppo = NormalizeGroup(car.Gruppo, car.Tipo),
-                Chilometraggio = car.Chilometraggio,
-                FuelLevel = Math.Clamp(car.LivelloCarburante, 0, 2),
-                FuelType = car.Carburante,
-                Stato = ToUiStatus(car.Stato),
-                DataPossesso = car.DataPossesso,
-                ImageUrl = car.ImageUrl,
-                RevisioneInizio = car.RevisioneInizio,
-                BolloInizio = car.BolloInizio,
-                TagliandoInizio = car.TagliandoInizio,
-                AssicurazioneInizio = car.AssicurazioneInizio
+                Id = veicolo.VeicoloId,
+                EAdmin = eAdmin,
+                ECreazione = false,
+                UrlRitorno = NormalizzaUrlRitorno(urlRitorno),
+                Modello = CostruisciNomeModello(veicolo),
+                Targa = veicolo.Targa,
+                IdAssegnatario = veicolo.UtentePrenotatoID,
+                Gruppo = NormalizzaGruppo(veicolo.Gruppo, veicolo.Tipo),
+                Chilometraggio = veicolo.Chilometraggio,
+                LivelloCarburante = Math.Clamp(veicolo.LivelloCarburante, 0, 2),
+                TipoCarburante = veicolo.Carburante,
+                Stato = StatoPerVista(veicolo.Stato),
+                DataPossesso = veicolo.DataPossesso,
+                UrlImmagine = veicolo.ImageUrl,
+                RevisioneInizio = veicolo.RevisioneInizio,
+                BolloInizio = veicolo.BolloInizio,
+                TagliandoInizio = veicolo.TagliandoInizio,
+                AssicurazioneInizio = veicolo.AssicurazioneInizio
             });
 
-            return View(model);
+            return View("Edit", model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Save(DashboardCarFormViewModel model)
+        public async Task<IActionResult> Salva(FormVeicoloViewModel model)
         {
-            var userId = GetCurrentUserId();
-            if (userId == null)
+            var idUtenteCorrente = OttieniIdUtenteCorrente();
+            if (idUtenteCorrente == null)
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            var isAdmin = User.IsInRole("admin");
-            model.IsAdmin = isAdmin;
-            model.IsCreate = !model.Id.HasValue;
-            model.ReturnUrl = NormalizeReturnUrl(model.ReturnUrl);
+            var eAdmin = User.IsInRole("admin");
+            model.EAdmin = eAdmin;
+            model.ECreazione = !model.Id.HasValue;
+            model.UrlRitorno = NormalizzaUrlRitorno(model.UrlRitorno);
 
             if (!ModelState.IsValid)
             {
-                model = await BuildCarFormAsync(model);
+                model = await PreparaFormVeicoloAsync(model);
                 return View("Edit", model);
             }
 
-            if (model.IsCreate && !isAdmin)
+            if (model.ECreazione && !eAdmin)
             {
                 return Forbid();
             }
 
-            // Un solo metodo salva sia creazione sia modifica.
-            Veicolo car;
+            // Un solo metodo gestisce sia creazione sia modifica.
+            Veicolo veicolo;
 
             if (model.Id.HasValue)
             {
-                car = await _context.Veicoli.FirstOrDefaultAsync(item => item.VeicoloId == model.Id.Value)
+                veicolo = await _context.Veicoli.FirstOrDefaultAsync(item => item.VeicoloId == model.Id.Value)
                     ?? throw new InvalidOperationException("Veicolo non trovato.");
 
-                if (!isAdmin && car.UtentePrenotatoID != userId.Value)
+                if (!eAdmin && veicolo.UtentePrenotatoID != idUtenteCorrente.Value)
                 {
                     return Forbid();
                 }
             }
             else
             {
-                car = new Veicolo
+                veicolo = new Veicolo
                 {
                     Tipo = "Auto",
                     DataCreazione = DateTime.UtcNow
                 };
-                _context.Veicoli.Add(car);
+                _context.Veicoli.Add(veicolo);
             }
 
-            ApplyFormToCar(car, model, isAdmin);
+            CopiaDatiFormSuVeicolo(veicolo, model, eAdmin);
 
             await _context.SaveChangesAsync();
-            TempData["StatusMessage"] = model.IsCreate
+            TempData["StatusMessage"] = model.ECreazione
                 ? "Veicolo creato correttamente."
                 : "Veicolo salvato correttamente.";
 
-            return Redirect(model.ReturnUrl);
+            return Redirect(model.UrlRitorno);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UseNow(int id, string? returnUrl)
+        public async Task<IActionResult> UsaOra(int id, string? urlRitorno)
         {
-            var userId = GetCurrentUserId();
-            if (userId == null)
+            var idUtenteCorrente = OttieniIdUtenteCorrente();
+            if (idUtenteCorrente == null)
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            var car = await _context.Veicoli.FirstOrDefaultAsync(item => item.VeicoloId == id);
-            if (car == null)
+            var veicolo = await _context.Veicoli.FirstOrDefaultAsync(item => item.VeicoloId == id);
+            if (veicolo == null)
             {
                 TempData["ErrorMessage"] = "Veicolo non trovato.";
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
 
-            if (car.UtentePrenotatoID != userId.Value)
+            if (veicolo.UtentePrenotatoID != idUtenteCorrente.Value)
             {
                 return Forbid();
             }
 
-            var currentStatus = ToUiStatus(car.Stato);
-            car.Stato = currentStatus == "in uso" ? "Disponibile" : "InUso";
-            car.DataAggiornamento = DateTime.UtcNow;
+            var statoAttuale = StatoPerVista(veicolo.Stato);
+            veicolo.Stato = statoAttuale == "in uso" ? "Disponibile" : "InUso";
+            veicolo.DataAggiornamento = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
             TempData["StatusMessage"] = "Stato veicolo aggiornato.";
-            return Redirect(NormalizeReturnUrl(returnUrl));
+            return Redirect(NormalizzaUrlRitorno(urlRitorno));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RequestMaintenance(int id, string? returnUrl)
+        public async Task<IActionResult> SegnalaManutenzione(int id, string? urlRitorno)
         {
-            var userId = GetCurrentUserId();
-            if (userId == null)
+            var idUtenteCorrente = OttieniIdUtenteCorrente();
+            if (idUtenteCorrente == null)
             {
                 return RedirectToAction("Login", "Account");
             }
@@ -242,204 +242,205 @@ namespace FleetManager.Controllers
                 return Forbid();
             }
 
-            var car = await _context.Veicoli.FirstOrDefaultAsync(item => item.VeicoloId == id);
-            if (car == null)
+            var veicolo = await _context.Veicoli.FirstOrDefaultAsync(item => item.VeicoloId == id);
+            if (veicolo == null)
             {
                 TempData["ErrorMessage"] = "Veicolo non trovato.";
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
 
-            if (car.UtentePrenotatoID != userId.Value)
+            if (veicolo.UtentePrenotatoID != idUtenteCorrente.Value)
             {
                 return Forbid();
             }
 
-            car.Stato = "RichiestaManu";
-            car.DataAggiornamento = DateTime.UtcNow;
+            veicolo.Stato = "RichiestaManu";
+            veicolo.DataAggiornamento = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
             TempData["StatusMessage"] = "Segnalazione manutenzione inviata.";
-            return Redirect(NormalizeReturnUrl(returnUrl));
+            return Redirect(NormalizzaUrlRitorno(urlRitorno));
         }
 
         [Authorize(Roles = "admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ApproveMaintenance(int id, string? returnUrl)
+        public async Task<IActionResult> ApprovaManutenzione(int id, string? urlRitorno)
         {
-            var car = await _context.Veicoli.FirstOrDefaultAsync(item => item.VeicoloId == id);
-            if (car == null)
+            var veicolo = await _context.Veicoli.FirstOrDefaultAsync(item => item.VeicoloId == id);
+            if (veicolo == null)
             {
                 TempData["ErrorMessage"] = "Veicolo non trovato.";
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
 
-            car.Stato = "Manutenzione";
-            car.DataAggiornamento = DateTime.UtcNow;
+            veicolo.Stato = "Manutenzione";
+            veicolo.DataAggiornamento = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
             TempData["StatusMessage"] = "Veicolo impostato in manutenzione.";
-            return Redirect(NormalizeReturnUrl(returnUrl));
+            return Redirect(NormalizzaUrlRitorno(urlRitorno));
         }
 
         [Authorize(Roles = "admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(int id, string? returnUrl)
+        public async Task<IActionResult> Elimina(int id, string? urlRitorno)
         {
-            var car = await _context.Veicoli.FirstOrDefaultAsync(item => item.VeicoloId == id);
-            if (car == null)
+            var veicolo = await _context.Veicoli.FirstOrDefaultAsync(item => item.VeicoloId == id);
+            if (veicolo == null)
             {
                 TempData["ErrorMessage"] = "Veicolo non trovato.";
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
 
-            _context.Veicoli.Remove(car);
+            _context.Veicoli.Remove(veicolo);
             await _context.SaveChangesAsync();
 
             TempData["StatusMessage"] = "Veicolo eliminato correttamente.";
-            return Redirect(NormalizeReturnUrl(returnUrl));
+            return Redirect(NormalizzaUrlRitorno(urlRitorno));
         }
 
         [Authorize(Roles = "admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetDemo(string? returnUrl)
+        public async Task<IActionResult> RipristinaDemo(string? urlRitorno)
         {
             await DemoDataSeeder.ResetDemoAsync(_context);
             TempData["StatusMessage"] = "Dataset demo ripristinato.";
-            return Redirect(NormalizeReturnUrl(returnUrl));
+            return Redirect(NormalizzaUrlRitorno(urlRitorno));
         }
 
         [Authorize(Roles = "admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ClearDemo(string? returnUrl)
+        public async Task<IActionResult> SvuotaDatiDemo(string? urlRitorno)
         {
             _context.Prenotazioni.RemoveRange(_context.Prenotazioni);
             _context.Veicoli.RemoveRange(_context.Veicoli);
             await _context.SaveChangesAsync();
 
             TempData["StatusMessage"] = "Parco auto svuotato correttamente.";
-            return Redirect(NormalizeReturnUrl(returnUrl));
+            return Redirect(NormalizzaUrlRitorno(urlRitorno));
         }
 
-        private async Task<DashboardCarFormViewModel> BuildCarFormAsync(DashboardCarFormViewModel model)
+        private async Task<FormVeicoloViewModel> PreparaFormVeicoloAsync(FormVeicoloViewModel model)
         {
-            // Prepariamo le select del form in modo semplice e leggibile.
-            model.OwnerOptions = await _context.Utenti
+            // Qui prepariamo tutte le select della pagina.
+            model.OpzioniAssegnatario = await _context.Utenti
                 .AsNoTracking()
-                .Where(user => !string.Equals(user.Ruolo, "Admin", StringComparison.OrdinalIgnoreCase))
-                .OrderBy(user => user.Cognome)
-                .ThenBy(user => user.Nome)
-                .Select(user => new SelectItemViewModel
+                .Where(utente => !string.Equals(utente.Ruolo, "Admin", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(utente => utente.Cognome)
+                .ThenBy(utente => utente.Nome)
+                .Select(utente => new OpzioneSelectViewModel
                 {
-                    Value = user.UtenteID.ToString(),
-                    Label = user.NomeCompleto + " | " + user.Email
+                    Valore = utente.UtenteID.ToString(),
+                    Testo = utente.NomeCompleto + " | " + utente.Email
                 })
                 .ToListAsync();
 
-            model.GroupOptions = new List<SelectItemViewModel>
+            model.OpzioniGruppo = new List<OpzioneSelectViewModel>
             {
-                new() { Value = Gruppo1, Label = Gruppo1 },
-                new() { Value = Gruppo2, Label = Gruppo2 },
-                new() { Value = Gruppo3, Label = Gruppo3 }
+                new() { Valore = Gruppo1, Testo = Gruppo1 },
+                new() { Valore = Gruppo2, Testo = Gruppo2 },
+                new() { Valore = Gruppo3, Testo = Gruppo3 }
             };
 
-            model.FuelOptions = new List<SelectItemViewModel>
+            model.OpzioniCarburante = new List<OpzioneSelectViewModel>
             {
-                new() { Value = "2", Label = "Alto" },
-                new() { Value = "1", Label = "Medio" },
-                new() { Value = "0", Label = "Riserva" }
+                new() { Valore = "2", Testo = "Alto" },
+                new() { Valore = "1", Testo = "Medio" },
+                new() { Valore = "0", Testo = "Riserva" }
             };
 
-            model.StatusOptions = new List<SelectItemViewModel>
+            model.OpzioniStato = new List<OpzioneSelectViewModel>
             {
-                new() { Value = "non in uso", Label = "Non in uso" },
-                new() { Value = "in uso", Label = "In uso" },
-                new() { Value = "in richiesta manutenzione", Label = "In richiesta manutenzione" },
-                new() { Value = "in manutenzione", Label = "In manutenzione" }
+                new() { Valore = "non in uso", Testo = "Non in uso" },
+                new() { Valore = "in uso", Testo = "In uso" },
+                new() { Valore = "in richiesta manutenzione", Testo = "In richiesta manutenzione" },
+                new() { Valore = "in manutenzione", Testo = "In manutenzione" }
             };
 
             return model;
         }
 
-        private DashboardCarCardViewModel ToCardViewModel(Veicolo car, bool isAdmin, int currentUserId)
+        private SchedaVeicoloViewModel CreaSchedaVeicolo(Veicolo veicolo, bool eAdmin, int idUtenteCorrente)
         {
-            // Questo e il passaggio dal modello database ai dati che la view stampa.
-            var uiStatus = ToUiStatus(car.Stato);
-            var isOwner = car.UtentePrenotatoID == currentUserId;
+            // Dal modello DB creiamo un oggetto molto semplice da stampare nella view.
+            var stato = StatoPerVista(veicolo.Stato);
+            var eAssegnatario = veicolo.UtentePrenotatoID == idUtenteCorrente;
 
-            return new DashboardCarCardViewModel
+            return new SchedaVeicoloViewModel
             {
-                Id = car.VeicoloId,
-                Modello = BuildModelLabel(car),
-                Targa = car.Targa,
-                Stato = uiStatus,
-                Gruppo = NormalizeGroup(car.Gruppo, car.Tipo),
-                OwnerId = car.UtentePrenotatoID,
-                OwnerName = car.UtentePrenotato?.NomeCompleto,
-                Chilometraggio = car.Chilometraggio,
-                FuelLevel = Math.Clamp(car.LivelloCarburante, 0, 2),
-                FuelType = car.Carburante,
-                ImageUrl = string.IsNullOrWhiteSpace(car.ImageUrl) ? "https://via.placeholder.com/400x250" : car.ImageUrl!,
-                DataPossesso = car.DataPossesso,
-                RevisioneInizio = car.RevisioneInizio,
-                RevisioneScadenza = CalculateExpiry(car.RevisioneInizio, 2),
-                BolloInizio = car.BolloInizio,
-                BolloScadenza = CalculateExpiry(car.BolloInizio, 1),
-                TagliandoInizio = car.TagliandoInizio,
-                TagliandoScadenza = CalculateExpiry(car.TagliandoInizio, 1),
-                AssicurazioneInizio = car.AssicurazioneInizio,
-                AssicurazioneScadenza = CalculateExpiry(car.AssicurazioneInizio, 1),
-                CanEdit = isAdmin || isOwner,
-                CanUseNow = !isAdmin && isOwner && uiStatus != "in manutenzione" && uiStatus != "in richiesta manutenzione",
-                CanRequestMaintenance = !isAdmin && isOwner && uiStatus != "in manutenzione" && uiStatus != "in richiesta manutenzione",
-                CanApproveMaintenance = isAdmin && uiStatus == "in richiesta manutenzione"
+                Id = veicolo.VeicoloId,
+                Modello = CostruisciNomeModello(veicolo),
+                Targa = veicolo.Targa,
+                Stato = stato,
+                Gruppo = NormalizzaGruppo(veicolo.Gruppo, veicolo.Tipo),
+                IdAssegnatario = veicolo.UtentePrenotatoID,
+                NomeAssegnatario = veicolo.UtentePrenotato?.NomeCompleto,
+                Chilometraggio = veicolo.Chilometraggio,
+                LivelloCarburante = Math.Clamp(veicolo.LivelloCarburante, 0, 2),
+                TipoCarburante = veicolo.Carburante,
+                UrlImmagine = string.IsNullOrWhiteSpace(veicolo.ImageUrl) ? "https://via.placeholder.com/400x250" : veicolo.ImageUrl!,
+                DataPossesso = veicolo.DataPossesso,
+                RevisioneInizio = veicolo.RevisioneInizio,
+                RevisioneScadenza = CalcolaScadenza(veicolo.RevisioneInizio, 2),
+                BolloInizio = veicolo.BolloInizio,
+                BolloScadenza = CalcolaScadenza(veicolo.BolloInizio, 1),
+                TagliandoInizio = veicolo.TagliandoInizio,
+                TagliandoScadenza = CalcolaScadenza(veicolo.TagliandoInizio, 1),
+                AssicurazioneInizio = veicolo.AssicurazioneInizio,
+                AssicurazioneScadenza = CalcolaScadenza(veicolo.AssicurazioneInizio, 1),
+                PuoModificare = eAdmin || eAssegnatario,
+                PuoUsareOra = !eAdmin && eAssegnatario && stato != "in manutenzione" && stato != "in richiesta manutenzione",
+                PuoSegnalareManutenzione = !eAdmin && eAssegnatario && stato != "in manutenzione" && stato != "in richiesta manutenzione",
+                PuoApprovareManutenzione = eAdmin && stato == "in richiesta manutenzione"
             };
         }
 
-        private static bool MatchesFilters(Veicolo car, DashboardFiltersViewModel filters)
+        private static bool RispettaFiltri(Veicolo veicolo, FiltriDashboardViewModel filtri)
         {
-            var modelLabel = BuildModelLabel(car).ToLowerInvariant();
-            var ownerName = car.UtentePrenotato?.NomeCompleto?.ToLowerInvariant() ?? string.Empty;
-            var uiStatus = ToUiStatus(car.Stato);
-            var fuelLevel = Math.Clamp(car.LivelloCarburante, 0, 2);
+            var nomeModello = CostruisciNomeModello(veicolo).ToLowerInvariant();
+            var nomeAssegnatario = veicolo.UtentePrenotato?.NomeCompleto?.ToLowerInvariant() ?? string.Empty;
+            var stato = StatoPerVista(veicolo.Stato);
+            var livelloCarburante = Math.Clamp(veicolo.LivelloCarburante, 0, 2);
 
-            if (!string.IsNullOrWhiteSpace(filters.Search))
+            if (!string.IsNullOrWhiteSpace(filtri.Ricerca))
             {
-                var query = filters.Search.Trim().ToLowerInvariant();
-                var searchText = string.Join(' ',
-                    modelLabel,
-                    car.Targa.ToLowerInvariant(),
-                    ownerName,
-                    NormalizeGroup(car.Gruppo, car.Tipo).ToLowerInvariant(),
-                    uiStatus,
-                    (car.Carburante ?? string.Empty).ToLowerInvariant(),
-                    FuelLabel(fuelLevel).ToLowerInvariant());
+                var testoRicerca = filtri.Ricerca.Trim().ToLowerInvariant();
+                var testoCompleto = string.Join(' ',
+                    nomeModello,
+                    veicolo.Targa.ToLowerInvariant(),
+                    nomeAssegnatario,
+                    NormalizzaGruppo(veicolo.Gruppo, veicolo.Tipo).ToLowerInvariant(),
+                    stato,
+                    (veicolo.Carburante ?? string.Empty).ToLowerInvariant(),
+                    EtichettaCarburante(livelloCarburante).ToLowerInvariant());
 
-                if (!searchText.Contains(query))
+                if (!testoCompleto.Contains(testoRicerca))
                 {
                     return false;
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(filters.Group) && NormalizeGroup(car.Gruppo, car.Tipo) != filters.Group)
+            if (!string.IsNullOrWhiteSpace(filtri.Gruppo) && NormalizzaGruppo(veicolo.Gruppo, veicolo.Tipo) != filtri.Gruppo)
             {
                 return false;
             }
 
-            if (!string.IsNullOrWhiteSpace(filters.Status) && uiStatus != filters.Status)
+            if (!string.IsNullOrWhiteSpace(filtri.Stato) && stato != filtri.Stato)
             {
                 return false;
             }
 
-            if (!string.IsNullOrWhiteSpace(filters.Owner) && !ownerName.Contains(filters.Owner.Trim().ToLowerInvariant()))
+            if (!string.IsNullOrWhiteSpace(filtri.Assegnatario) &&
+                !nomeAssegnatario.Contains(filtri.Assegnatario.Trim().ToLowerInvariant()))
             {
                 return false;
             }
 
-            if (filters.FuelLevel.HasValue && fuelLevel != filters.FuelLevel.Value)
+            if (filtri.LivelloCarburante.HasValue && livelloCarburante != filtri.LivelloCarburante.Value)
             {
                 return false;
             }
@@ -447,86 +448,95 @@ namespace FleetManager.Controllers
             return true;
         }
 
-        private void ApplyFormToCar(Veicolo car, DashboardCarFormViewModel model, bool isAdmin)
+        private void CopiaDatiFormSuVeicolo(Veicolo veicolo, FormVeicoloViewModel model, bool eAdmin)
         {
-            // Qui teniamo in un solo punto la copia dei campi dal form al database.
-            var (marca, modello) = SplitModel(model.Modello);
+            // Tutti i campi modificabili passano da qui.
+            var (marca, modello) = SeparaMarcaEModello(model.Modello);
 
-            car.Marca = marca;
-            car.Modello = modello;
-            car.Targa = model.Targa.Trim().ToUpperInvariant();
-            car.Chilometraggio = Math.Max(model.Chilometraggio, 0);
-            car.LivelloCarburante = Math.Clamp(model.FuelLevel, 0, 2);
-            car.Carburante = model.FuelType?.Trim();
-            car.DataPossesso = model.DataPossesso;
-            car.ImageUrl = string.IsNullOrWhiteSpace(model.ImageUrl) ? null : model.ImageUrl.Trim();
-            car.RevisioneInizio = model.RevisioneInizio;
-            car.BolloInizio = model.BolloInizio;
-            car.TagliandoInizio = model.TagliandoInizio;
-            car.AssicurazioneInizio = model.AssicurazioneInizio;
-            car.RevisioneScadenza = CalculateExpiry(model.RevisioneInizio, 2);
-            car.BolloScadenza = CalculateExpiry(model.BolloInizio, 1);
-            car.TagliandoScadenza = CalculateExpiry(model.TagliandoInizio, 1);
-            car.AssicurazioneScadenza = CalculateExpiry(model.AssicurazioneInizio, 1);
-            car.DataAggiornamento = DateTime.UtcNow;
+            veicolo.Marca = marca;
+            veicolo.Modello = modello;
+            veicolo.Targa = model.Targa.Trim().ToUpperInvariant();
+            veicolo.Chilometraggio = Math.Max(model.Chilometraggio, 0);
+            veicolo.LivelloCarburante = Math.Clamp(model.LivelloCarburante, 0, 2);
+            veicolo.Carburante = model.TipoCarburante?.Trim();
+            veicolo.DataPossesso = model.DataPossesso;
+            veicolo.ImageUrl = string.IsNullOrWhiteSpace(model.UrlImmagine) ? null : model.UrlImmagine.Trim();
+            veicolo.RevisioneInizio = model.RevisioneInizio;
+            veicolo.BolloInizio = model.BolloInizio;
+            veicolo.TagliandoInizio = model.TagliandoInizio;
+            veicolo.AssicurazioneInizio = model.AssicurazioneInizio;
+            veicolo.RevisioneScadenza = CalcolaScadenza(model.RevisioneInizio, 2);
+            veicolo.BolloScadenza = CalcolaScadenza(model.BolloInizio, 1);
+            veicolo.TagliandoScadenza = CalcolaScadenza(model.TagliandoInizio, 1);
+            veicolo.AssicurazioneScadenza = CalcolaScadenza(model.AssicurazioneInizio, 1);
+            veicolo.DataAggiornamento = DateTime.UtcNow;
 
-            if (isAdmin)
+            if (eAdmin)
             {
-                car.UtentePrenotatoID = model.OwnerId;
-                car.Gruppo = NormalizeGroup(model.Gruppo, car.Tipo);
-                car.Stato = ToSqlStatus(model.Stato);
+                veicolo.UtentePrenotatoID = model.IdAssegnatario;
+                veicolo.Gruppo = NormalizzaGruppo(model.Gruppo, veicolo.Tipo);
+                veicolo.Stato = StatoPerDatabase(model.Stato);
             }
         }
 
-        private int? GetCurrentUserId()
+        private int? OttieniIdUtenteCorrente()
         {
-            var value = User.FindFirstValue("matricola") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return int.TryParse(value, out var userId) ? userId : null;
+            var valore = User.FindFirstValue("matricola") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return int.TryParse(valore, out var idUtente) ? idUtente : null;
         }
 
-        private string BuildReturnUrl()
+        private string CostruisciUrlRitorno()
         {
-            var path = Request.Path.HasValue ? Request.Path.Value! : Url.Action("Index", "Dashboard")!;
+            var percorso = Request.Path.HasValue ? Request.Path.Value! : Url.Action(nameof(Index), "Dashboard")!;
             var query = Request.QueryString.HasValue ? Request.QueryString.Value : string.Empty;
-            return path + query;
+            return percorso + query;
         }
 
-        private string NormalizeReturnUrl(string? returnUrl)
+        private string NormalizzaUrlRitorno(string? urlRitorno)
         {
-            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+            if (!string.IsNullOrWhiteSpace(urlRitorno) && Url.IsLocalUrl(urlRitorno))
             {
-                return returnUrl;
+                return urlRitorno;
             }
 
-            return Url.Action("Index", "Dashboard")!;
+            return Url.Action(nameof(Index), "Dashboard")!;
         }
 
-        private static DateTime? CalculateExpiry(DateTime? startDate, int years)
+        private static DateTime? CalcolaScadenza(DateTime? dataInizio, int anni)
         {
-            return startDate?.AddYears(years);
+            return dataInizio?.AddYears(anni);
         }
 
-        private static string BuildModelLabel(Veicolo car)
+        private static string CostruisciNomeModello(Veicolo veicolo)
         {
-            return string.IsNullOrWhiteSpace(car.Marca)
-                ? car.Modello
-                : car.Marca + " " + car.Modello;
-        }
-
-        private static string NormalizeGroup(string? group, string? tipo)
-        {
-            var cleaned = (group ?? string.Empty).Trim().ToUpperInvariant();
-            if (cleaned == Gruppo1 || cleaned == Gruppo2 || cleaned == Gruppo3)
+            if (string.IsNullOrWhiteSpace(veicolo.Marca))
             {
-                return cleaned;
+                return veicolo.Modello;
+            }
+
+            if (string.IsNullOrWhiteSpace(veicolo.Modello) ||
+                string.Equals(veicolo.Marca, veicolo.Modello, StringComparison.OrdinalIgnoreCase))
+            {
+                return veicolo.Marca;
+            }
+
+            return veicolo.Marca + " " + veicolo.Modello;
+        }
+
+        private static string NormalizzaGruppo(string? gruppo, string? tipo)
+        {
+            var valorePulito = (gruppo ?? string.Empty).Trim().ToUpperInvariant();
+            if (valorePulito == Gruppo1 || valorePulito == Gruppo2 || valorePulito == Gruppo3)
+            {
+                return valorePulito;
             }
 
             return string.Equals(tipo, "Furgone", StringComparison.OrdinalIgnoreCase) ? Gruppo2 : Gruppo1;
         }
 
-        private static string ToUiStatus(string? sqlStatus)
+        private static string StatoPerVista(string? statoDatabase)
         {
-            return (sqlStatus ?? string.Empty).Trim().ToLowerInvariant() switch
+            return (statoDatabase ?? string.Empty).Trim().ToLowerInvariant() switch
             {
                 "disponibile" => "non in uso",
                 "inuso" => "in uso",
@@ -536,9 +546,9 @@ namespace FleetManager.Controllers
             };
         }
 
-        private static string ToSqlStatus(string? uiStatus)
+        private static string StatoPerDatabase(string? statoVista)
         {
-            return (uiStatus ?? string.Empty).Trim().ToLowerInvariant() switch
+            return (statoVista ?? string.Empty).Trim().ToLowerInvariant() switch
             {
                 "in uso" => "InUso",
                 "in manutenzione" => "Manutenzione",
@@ -547,9 +557,9 @@ namespace FleetManager.Controllers
             };
         }
 
-        private static string FuelLabel(int fuelLevel)
+        private static string EtichettaCarburante(int livelloCarburante)
         {
-            return fuelLevel switch
+            return livelloCarburante switch
             {
                 2 => "Alto",
                 1 => "Medio",
@@ -557,22 +567,22 @@ namespace FleetManager.Controllers
             };
         }
 
-        private static (string Marca, string Modello) SplitModel(string modelText)
+        private static (string Marca, string Modello) SeparaMarcaEModello(string testoModello)
         {
-            var cleaned = (modelText ?? string.Empty).Trim();
-            var parts = cleaned.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+            var valorePulito = (testoModello ?? string.Empty).Trim();
+            var parti = valorePulito.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
 
-            if (parts.Length == 0)
+            if (parti.Length == 0)
             {
                 return ("Veicolo", "Senza modello");
             }
 
-            if (parts.Length == 1)
+            if (parti.Length == 1)
             {
-                return (parts[0], parts[0]);
+                return (parti[0], parti[0]);
             }
 
-            return (parts[0], parts[1]);
+            return (parti[0], parti[1]);
         }
     }
 }
