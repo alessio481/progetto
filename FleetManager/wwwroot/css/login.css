@@ -2,10 +2,8 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background:
-        radial-gradient(circle at top right, rgba(0, 164, 237, 0.18), transparent 28%),
-        linear-gradient(145deg, #111 0%, #1b1f24 55%, #2a3138 100%);
-    color: #1f2933;
+    background: #eef1f4;
+    color: #24303c;
     min-height: 100vh;
     display: grid;
     place-items: center;
@@ -15,14 +13,13 @@ body {
 #loginPanel {
     width: 100%;
     max-width: 430px;
-    background: rgba(255,255,255,0.97);
+    background: #ffffff;
     padding: 42px 34px;
-    border-radius: 14px;
-    box-shadow: 0 20px 45px rgba(0,0,0,0.28);
+    border-radius: 2px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    border: 1px solid rgba(255,255,255,0.26);
+    border: 1px solid #d4dbe3;
 }
 
 .login-header {
@@ -47,8 +44,8 @@ body {
     width: 100%;
     padding: 13px 14px;
     margin-bottom: 14px;
-    border: 1px solid #d7dce2;
-    border-radius: 8px;
+    border: 1px solid #cfd7df;
+    border-radius: 2px;
     background: #fff;
     font-size: 15px;
     color: #111;
@@ -56,24 +53,18 @@ body {
 
 #loginPanel input:focus {
     outline: none;
-    border-color: #00a4ed;
-    box-shadow: 0 0 0 4px rgba(0,164,237,0.14);
+    border-color: #5c7289;
 }
 
 .btn-login-custom {
-    background: #111;
+    background: #1f2a35;
     color: white;
     border: none;
-    padding: 18px 0;
+    padding: 16px 0;
     width: 100%;
     cursor: pointer;
     text-transform: uppercase;
-    border-radius: 8px;
-    transition: background 0.2s ease;
-}
-
-.btn-login-custom:hover {
-    background: #00a4ed;
+    border-radius: 2px;
 }
 
 .btn-login-custom .action-text {
@@ -99,5 +90,5 @@ body {
     color: #4b5563;
     font-size: 12px;
     line-height: 1.6;
-    text-align: center;
+    text-align: left;
 }
