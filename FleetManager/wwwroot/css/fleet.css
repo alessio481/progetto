@@ -53,7 +53,9 @@ header {
     position: relative;
 }
 
-.header-buttons button {
+.header-buttons button,
+.header-link-button,
+.debug-menu summary {
     background: #1f2a35;
     color: white;
     border: 1px solid #5a6b7d;
@@ -63,6 +65,13 @@ header {
     font-size: 13px;
     padding: 8px 12px;
     border-radius: 2px;
+    text-decoration: none;
+    list-style: none;
+    display: inline-block;
+}
+
+.debug-menu summary::-webkit-details-marker {
+    display: none;
 }
 
 .debug-menu {
@@ -81,7 +90,7 @@ header {
     z-index: 1200;
 }
 
-.debug-dropdown.open {
+.debug-menu[open] .debug-dropdown {
     display: grid;
     gap: 10px;
 }
@@ -90,6 +99,10 @@ header {
     width: 100%;
     text-align: left;
     border-bottom: 1px solid #46586b;
+}
+
+.server-dropdown form {
+    margin: 0;
 }
 
 .container {
@@ -176,6 +189,29 @@ header {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
     gap: 14px;
+}
+
+.search-actions {
+    display: flex;
+    align-items: end;
+    gap: 10px;
+}
+
+.btn-filter {
+    background: #1f2a35;
+    color: white;
+    border: 1px solid #5a6b7d;
+    padding: 11px 14px;
+    border-radius: 2px;
+    text-decoration: none;
+    cursor: pointer;
+    font: inherit;
+}
+
+.btn-filter-secondary {
+    background: #ffffff;
+    color: #24303c;
+    border: 1px solid #cfd7df;
 }
 
 .search-field label {
@@ -408,6 +444,52 @@ header {
     gap: 12px;
 }
 
+.card-details {
+    margin-top: 12px;
+    border: 1px solid #d4dbe3;
+    background: #f7f8fa;
+    border-radius: 2px;
+}
+
+.card-details summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 10px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #24303c;
+}
+
+.card-details summary::-webkit-details-marker {
+    display: none;
+}
+
+.card-deadlines {
+    padding: 0 12px 12px;
+    display: grid;
+    gap: 8px;
+    font-size: 12px;
+    color: #52606d;
+}
+
+.card-deadlines div {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.card-actions {
+    margin-top: 14px;
+    display: grid;
+    gap: 10px;
+}
+
+.inline-form {
+    margin: 0;
+}
+
 .btn-edit {
     margin-top: 14px;
     width: 100%;
@@ -489,6 +571,60 @@ header {
     max-height: 90vh;
     overflow-y: auto;
     border: 1px solid #d4dbe3;
+}
+
+.edit-shell {
+    max-width: 980px;
+    margin: 0 auto;
+}
+
+.edit-panel {
+    background: #ffffff;
+    border: 1px solid #d4dbe3;
+    border-radius: 2px;
+    padding: 28px;
+}
+
+.edit-panel h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1f2a35;
+    margin-bottom: 6px;
+}
+
+.edit-subtitle {
+    color: #5f6b76;
+    margin-bottom: 22px;
+}
+
+.edit-form {
+    display: grid;
+    gap: 18px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.validation-box {
+    color: #8b1e1e;
+    border: 1px solid #e6c9c9;
+    background: #fff7f7;
+    padding: 12px 14px;
+    border-radius: 2px;
+}
+
+.static-section {
+    margin-top: 0;
+}
+
+.section-heading {
+    font-size: 16px;
+    font-weight: 700;
+    color: #24303c;
+    margin-bottom: 14px;
 }
 
 .modal-grid {
@@ -637,9 +773,23 @@ header {
     margin-right: auto;
 }
 
+.link-button {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.delete-form {
+    margin-top: 14px;
+}
+
 @media (max-width: 1100px) {
     .search-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .search-actions {
+        grid-column: 1 / -1;
     }
 }
 
@@ -647,7 +797,8 @@ header {
     .summary-strip,
     .modal-grid,
     .dashboard-grid,
-    .deadline-overview {
+    .deadline-overview,
+    .form-grid {
         grid-template-columns: 1fr 1fr;
     }
 }
@@ -679,7 +830,8 @@ header {
     .modal-grid,
     .search-grid,
     .dashboard-grid,
-    .deadline-overview {
+    .deadline-overview,
+    .form-grid {
         grid-template-columns: 1fr;
     }
 

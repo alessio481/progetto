@@ -1,0 +1,159 @@
+@model FleetManager.Models.ViewModels.DashboardCarFormViewModel
+@{
+    Layout = null;
+    ViewData["Title"] = Model.IsCreate ? "Nuovo Veicolo" : "Modifica Veicolo";
+}
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fondazione Simonini | @ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/fleet.css" asp-append-version="true" />
+</head>
+<body>
+    <div id="appShell">
+        <header>
+            <div class="header-logo-container">
+                <img src="https://www.fondazionesimonini.it/imgs/logo.png" alt="Fondazione Simonini" style="height: 52px;">
+                <div class="header-user">@ViewData["Title"]</div>
+            </div>
+            <div class="header-title-center">VEICOLO</div>
+            <div class="header-buttons">
+                <a class="header-link-button" href="@Model.ReturnUrl">Torna alla dashboard</a>
+                <a class="header-link-button" asp-controller="Account" asp-action="Logout">Logout</a>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="edit-shell">
+                <section class="edit-panel">
+                    <h1>@(Model.IsCreate ? "Nuovo veicolo" : "Modifica veicolo")</h1>
+                    <p class="edit-subtitle">Form classico MVC: compili i campi e salvi con un normale `POST`.</p>
+
+                    <form asp-action="Save" method="post" class="edit-form">
+                        @Html.AntiForgeryToken()
+                        <input asp-for="Id" type="hidden" />
+                        <input asp-for="IsCreate" type="hidden" />
+                        <input asp-for="IsAdmin" type="hidden" />
+                        <input asp-for="ReturnUrl" type="hidden" />
+
+                        <div asp-validation-summary="ModelOnly" class="validation-box"></div>
+
+                        <div class="form-grid">
+                            <div class="modal-field">
+                                <label asp-for="Modello">Modello</label>
+                                <input asp-for="Modello" />
+                            </div>
+                            <div class="modal-field">
+                                <label asp-for="Targa">Targa</label>
+                                <input asp-for="Targa" />
+                            </div>
+
+                            @if (Model.IsAdmin)
+                            {
+                                <div class="modal-field">
+                                    <label asp-for="OwnerId">Assegnatario</label>
+                                    <select asp-for="OwnerId">
+                                        <option value="">Non assegnata</option>
+                                        @foreach (var owner in Model.OwnerOptions)
+                                        {
+                                            <option value="@owner.Value">@owner.Label</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="modal-field">
+                                    <label asp-for="Gruppo">Gruppo</label>
+                                    <select asp-for="Gruppo">
+                                        @foreach (var group in Model.GroupOptions)
+                                        {
+                                            <option value="@group.Value">@group.Label</option>
+                                        }
+                                    </select>
+                                </div>
+                            }
+
+                            <div class="modal-field">
+                                <label asp-for="Chilometraggio">Km attuali</label>
+                                <input asp-for="Chilometraggio" type="number" min="0" />
+                            </div>
+                            <div class="modal-field">
+                                <label asp-for="FuelLevel">Livello carburante</label>
+                                <select asp-for="FuelLevel">
+                                    @foreach (var fuel in Model.FuelOptions)
+                                    {
+                                        <option value="@fuel.Value">@fuel.Label</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="modal-field">
+                                <label asp-for="FuelType">Tipo carburante</label>
+                                <input asp-for="FuelType" />
+                            </div>
+
+                            @if (Model.IsAdmin)
+                            {
+                                <div class="modal-field">
+                                    <label asp-for="Stato">Stato</label>
+                                    <select asp-for="Stato">
+                                        @foreach (var status in Model.StatusOptions)
+                                        {
+                                            <option value="@status.Value">@status.Label</option>
+                                        }
+                                    </select>
+                                </div>
+                            }
+
+                            <div class="modal-field">
+                                <label asp-for="DataPossesso">Data possesso</label>
+                                <input asp-for="DataPossesso" type="date" />
+                            </div>
+                            <div class="modal-field">
+                                <label asp-for="ImageUrl">URL foto</label>
+                                <input asp-for="ImageUrl" />
+                            </div>
+                        </div>
+
+                        <section class="events-section static-section">
+                            <h2 class="section-heading">Scadenze</h2>
+                            <div class="form-grid">
+                                <div class="modal-field">
+                                    <label asp-for="RevisioneInizio">Revisione inizio</label>
+                                    <input asp-for="RevisioneInizio" type="date" />
+                                </div>
+                                <div class="modal-field">
+                                    <label asp-for="BolloInizio">Bollo inizio</label>
+                                    <input asp-for="BolloInizio" type="date" />
+                                </div>
+                                <div class="modal-field">
+                                    <label asp-for="TagliandoInizio">Tagliando inizio</label>
+                                    <input asp-for="TagliandoInizio" type="date" />
+                                </div>
+                                <div class="modal-field">
+                                    <label asp-for="AssicurazioneInizio">Assicurazione inizio</label>
+                                    <input asp-for="AssicurazioneInizio" type="date" />
+                                </div>
+                            </div>
+                        </section>
+
+                        <div class="modal-footer">
+                            <a class="btn-cancel link-button" href="@Model.ReturnUrl">Annulla</a>
+                            <button class="btn-save" type="submit">Salva</button>
+                        </div>
+                    </form>
+
+                    @if (Model.IsAdmin && !Model.IsCreate && Model.Id.HasValue)
+                    {
+                        <form asp-action="Delete" method="post" class="delete-form">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                            <button class="btn-delete" type="submit">Elimina veicolo</button>
+                        </form>
+                    }
+                </section>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
