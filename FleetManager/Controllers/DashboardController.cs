@@ -26,15 +26,13 @@ namespace FleetManager.Controllers
         {
             // La dashboard viene costruita tutta lato server.
             var idUtenteCorrente = OttieniIdUtenteCorrente();
-            if (idUtenteCorrente == null)
+            if (idUtenteCorrente == null) //redirect se non sei loggato
             {
                 return RedirectToAction("Login", "Account");
             }
 
             var eAdmin = User.IsInRole("admin");
-            var utenteCorrente = await _context.Utenti
-                .AsNoTracking()
-                .FirstOrDefaultAsync(utente => utente.UtenteID == idUtenteCorrente.Value);
+            var utenteCorrente = await _context.Utenti.AsNoTracking().FirstOrDefaultAsync(utente => utente.UtenteID == idUtenteCorrente.Value);
 
             if (utenteCorrente == null)
             {
