@@ -25,11 +25,11 @@ namespace FleetManager.Controllers
                 return RedirectToAction("Index", "Dashboard");
             }
 
-            return View(new FleetLoginViewModel());
+            return View(new LoginUtenteViewModel());
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(FleetLoginViewModel model)
+        public async Task<IActionResult> Login(LoginUtenteViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -86,6 +86,7 @@ namespace FleetManager.Controllers
 
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
+            // Dopo il login si entra sempre nella dashboard principale.
             return RedirectToAction("Index", "Dashboard");
         }
 

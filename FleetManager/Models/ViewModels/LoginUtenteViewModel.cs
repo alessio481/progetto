@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace FleetManager.Models.ViewModels
 {
-    public class FleetLoginViewModel
+    public class LoginUtenteViewModel
     {
         // ViewModel molto semplice per la pagina di login.
         [Required]

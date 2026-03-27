@@ -26,7 +26,10 @@ namespace FleetManager.Controllers
         [HttpGet]
         public async Task<IActionResult> Index([FromQuery] FiltriDashboardViewModel filtri)
         {
-            // La dashboard viene costruita tutta lato server.
+            // Flusso principale della demo:
+            // 1. leggiamo l'utente loggato
+            // 2. prendiamo i veicoli dal database
+            // 3. prepariamo le schede da mostrare nella view
             var idUtenteCorrente = OttieniIdUtenteCorrente();
             if (idUtenteCorrente == null)
             {
@@ -57,8 +60,8 @@ namespace FleetManager.Controllers
                 NomeUtenteCorrente = utenteCorrente.NomeCompleto,
                 MessaggioOperazione = TempData["StatusMessage"]?.ToString(),
                 MessaggioErrore = TempData["ErrorMessage"]?.ToString(),
-                UrlRitorno = CostruisciUrlRitorno(),
-                Filtri = filtri
+                PaginaRitorno = CostruisciUrlRitorno(),
+                FiltriRicerca = filtri
             };
 
             var elencoVeicoli = new List<SchedaVeicoloViewModel>();
@@ -79,13 +82,13 @@ namespace FleetManager.Controllers
                 elencoVeicoli.Add(CreaSchedaVeicolo(veicolo, eAdmin, idUtenteCorrente.Value));
             }
 
-            model.Veicoli = elencoVeicoli;
+            model.SchedeVeicoli = elencoVeicoli;
 
             return View(model);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Crea(string? urlRitorno)
+        public async Task<IActionResult> Crea(string? paginaRitorno)
         {
             if (!User.IsInRole("admin"))
             {
@@ -96,14 +99,14 @@ namespace FleetManager.Controllers
             {
                 EAdmin = true,
                 ECreazione = true,
-                UrlRitorno = NormalizzaUrlRitorno(urlRitorno)
+                PaginaRitorno = NormalizzaUrlRitorno(paginaRitorno)
             });
 
             return View("Edit", model);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Modifica(int id, string? urlRitorno)
+        public async Task<IActionResult> Modifica(int id, string? paginaRitorno)
         {
             var idUtenteCorrente = OttieniIdUtenteCorrente();
             if (idUtenteCorrente == null)
@@ -130,10 +133,10 @@ namespace FleetManager.Controllers
 
             var model = await PreparaFormVeicoloAsync(new FormVeicoloViewModel
             {
-                Id = veicolo.VeicoloId,
+                IdVeicolo = veicolo.VeicoloId,
                 EAdmin = eAdmin,
                 ECreazione = false,
-                UrlRitorno = NormalizzaUrlRitorno(urlRitorno),
+                PaginaRitorno = NormalizzaUrlRitorno(paginaRitorno),
                 Modello = CostruisciNomeModello(veicolo),
                 Targa = veicolo.Targa,
                 IdAssegnatario = veicolo.UtentePrenotatoID,
@@ -143,7 +146,7 @@ namespace FleetManager.Controllers
                 TipoCarburante = veicolo.Carburante,
                 Stato = StatoPerVista(veicolo.Stato),
                 DataPossesso = veicolo.DataPossesso,
-                UrlImmagine = veicolo.ImageUrl,
+                LinkImmagine = veicolo.ImageUrl,
                 RevisioneInizio = veicolo.RevisioneInizio,
                 BolloInizio = veicolo.BolloInizio,
                 TagliandoInizio = veicolo.TagliandoInizio,
@@ -165,8 +168,8 @@ namespace FleetManager.Controllers
 
             var eAdmin = User.IsInRole("admin");
             model.EAdmin = eAdmin;
-            model.ECreazione = !model.Id.HasValue;
-            model.UrlRitorno = NormalizzaUrlRitorno(model.UrlRitorno);
+            model.ECreazione = !model.IdVeicolo.HasValue;
+            model.PaginaRitorno = NormalizzaUrlRitorno(model.PaginaRitorno);
 
             if (!ModelState.IsValid)
             {
@@ -182,9 +185,9 @@ namespace FleetManager.Controllers
             // Un solo metodo gestisce sia creazione sia modifica.
             Veicolo veicolo;
 
-            if (model.Id.HasValue)
+            if (model.IdVeicolo.HasValue)
             {
-                var veicoloTrovato = await _context.Veicoli.FirstOrDefaultAsync(item => item.VeicoloId == model.Id.Value);
+                var veicoloTrovato = await _context.Veicoli.FirstOrDefaultAsync(item => item.VeicoloId == model.IdVeicolo.Value);
                 if (veicoloTrovato == null)
                 {
                     TempData["ErrorMessage"] = "Veicolo non trovato.";
@@ -221,12 +224,12 @@ namespace FleetManager.Controllers
                 TempData["StatusMessage"] = "Veicolo salvato correttamente.";
             }
 
-            return Redirect(model.UrlRitorno);
+            return Redirect(model.PaginaRitorno);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UsaOra(int id, string? urlRitorno)
+        public async Task<IActionResult> UsaOra(int id, string? paginaRitorno)
         {
             var idUtenteCorrente = OttieniIdUtenteCorrente();
             if (idUtenteCorrente == null)
@@ -260,12 +263,12 @@ namespace FleetManager.Controllers
 
             await _context.SaveChangesAsync();
             TempData["StatusMessage"] = "Stato veicolo aggiornato.";
-            return Redirect(NormalizzaUrlRitorno(urlRitorno));
+            return Redirect(NormalizzaUrlRitorno(paginaRitorno));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SegnalaManutenzione(int id, string? urlRitorno)
+        public async Task<IActionResult> SegnalaManutenzione(int id, string? paginaRitorno)
         {
             var idUtenteCorrente = OttieniIdUtenteCorrente();
             if (idUtenteCorrente == null)
@@ -295,13 +298,13 @@ namespace FleetManager.Controllers
             await _context.SaveChangesAsync();
 
             TempData["StatusMessage"] = "Segnalazione manutenzione inviata.";
-            return Redirect(NormalizzaUrlRitorno(urlRitorno));
+            return Redirect(NormalizzaUrlRitorno(paginaRitorno));
         }
 
         [Authorize(Roles = "admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ApprovaManutenzione(int id, string? urlRitorno)
+        public async Task<IActionResult> ApprovaManutenzione(int id, string? paginaRitorno)
         {
             var veicolo = await _context.Veicoli.FirstOrDefaultAsync(item => item.VeicoloId == id);
             if (veicolo == null)
@@ -315,13 +318,13 @@ namespace FleetManager.Controllers
             await _context.SaveChangesAsync();
 
             TempData["StatusMessage"] = "Veicolo impostato in manutenzione.";
-            return Redirect(NormalizzaUrlRitorno(urlRitorno));
+            return Redirect(NormalizzaUrlRitorno(paginaRitorno));
         }
 
         [Authorize(Roles = "admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Elimina(int id, string? urlRitorno)
+        public async Task<IActionResult> Elimina(int id, string? paginaRitorno)
         {
             var veicolo = await _context.Veicoli.FirstOrDefaultAsync(item => item.VeicoloId == id);
             if (veicolo == null)
@@ -334,30 +337,30 @@ namespace FleetManager.Controllers
             await _context.SaveChangesAsync();
 
             TempData["StatusMessage"] = "Veicolo eliminato correttamente.";
-            return Redirect(NormalizzaUrlRitorno(urlRitorno));
+            return Redirect(NormalizzaUrlRitorno(paginaRitorno));
         }
 
         [Authorize(Roles = "admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RipristinaDemo(string? urlRitorno)
+        public async Task<IActionResult> RipristinaDemo(string? paginaRitorno)
         {
             await DemoDataSeeder.RipristinaDatiDemoAsync(_context);
             TempData["StatusMessage"] = "Dataset demo ripristinato.";
-            return Redirect(NormalizzaUrlRitorno(urlRitorno));
+            return Redirect(NormalizzaUrlRitorno(paginaRitorno));
         }
 
         [Authorize(Roles = "admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SvuotaDatiDemo(string? urlRitorno)
+        public async Task<IActionResult> SvuotaDatiDemo(string? paginaRitorno)
         {
             _context.Prenotazioni.RemoveRange(_context.Prenotazioni);
             _context.Veicoli.RemoveRange(_context.Veicoli);
             await _context.SaveChangesAsync();
 
             TempData["StatusMessage"] = "Parco auto svuotato correttamente.";
-            return Redirect(NormalizzaUrlRitorno(urlRitorno));
+            return Redirect(NormalizzaUrlRitorno(paginaRitorno));
         }
 
         private async Task<FormVeicoloViewModel> PreparaFormVeicoloAsync(FormVeicoloViewModel model)
@@ -440,7 +443,7 @@ namespace FleetManager.Controllers
 
             return new SchedaVeicoloViewModel
             {
-                Id = veicolo.VeicoloId,
+                IdVeicolo = veicolo.VeicoloId,
                 Modello = CostruisciNomeModello(veicolo),
                 Targa = veicolo.Targa,
                 Stato = stato,
@@ -450,7 +453,7 @@ namespace FleetManager.Controllers
                 Chilometraggio = veicolo.Chilometraggio,
                 LivelloCarburante = Math.Clamp(veicolo.LivelloCarburante, 0, 2),
                 TipoCarburante = veicolo.Carburante,
-                UrlImmagine = ScegliUrlImmagine(veicolo.ImageUrl),
+                LinkImmagine = ScegliUrlImmagine(veicolo.ImageUrl),
                 DataPossesso = veicolo.DataPossesso,
                 RevisioneInizio = veicolo.RevisioneInizio,
                 RevisioneScadenza = CalcolaScadenza(veicolo.RevisioneInizio, 2),
@@ -534,9 +537,9 @@ namespace FleetManager.Controllers
             veicolo.Carburante = model.TipoCarburante?.Trim();
             veicolo.DataPossesso = model.DataPossesso;
             veicolo.ImageUrl = null;
-            if (!string.IsNullOrWhiteSpace(model.UrlImmagine))
+            if (!string.IsNullOrWhiteSpace(model.LinkImmagine))
             {
-                veicolo.ImageUrl = model.UrlImmagine.Trim();
+                veicolo.ImageUrl = model.LinkImmagine.Trim();
             }
 
             veicolo.RevisioneInizio = model.RevisioneInizio;

@@ -9,15 +9,15 @@ namespace FleetManager.Models.ViewModels
         public string NomeUtenteCorrente { get; set; } = string.Empty;
         public string? MessaggioOperazione { get; set; }
         public string? MessaggioErrore { get; set; }
-        public string UrlRitorno { get; set; } = "/Dashboard";
-        public FiltriDashboardViewModel Filtri { get; set; } = new();
-        public List<SchedaVeicoloViewModel> Veicoli { get; set; } = new();
+        public string PaginaRitorno { get; set; } = "/Dashboard";
+        public FiltriDashboardViewModel FiltriRicerca { get; set; } = new();
+        public List<SchedaVeicoloViewModel> SchedeVeicoli { get; set; } = new();
 
         public int TotaleVeicoli
         {
             get
             {
-                return Veicoli.Count;
+                return SchedeVeicoli.Count;
             }
         }
 
@@ -27,7 +27,7 @@ namespace FleetManager.Models.ViewModels
             {
                 var totale = 0;
 
-                foreach (var veicolo in Veicoli)
+                foreach (var veicolo in SchedeVeicoli)
                 {
                     if (veicolo.Stato == "in uso")
                     {
@@ -45,7 +45,7 @@ namespace FleetManager.Models.ViewModels
             {
                 var totale = 0;
 
-                foreach (var veicolo in Veicoli)
+                foreach (var veicolo in SchedeVeicoli)
                 {
                     if (veicolo.Stato.Contains("manutenzione"))
                     {
@@ -102,7 +102,7 @@ namespace FleetManager.Models.ViewModels
 
     public class SchedaVeicoloViewModel
     {
-        public int Id { get; set; }
+        public int IdVeicolo { get; set; }
         public string Modello { get; set; } = string.Empty;
         public string Targa { get; set; } = string.Empty;
         public string Stato { get; set; } = "non in uso";
@@ -112,7 +112,7 @@ namespace FleetManager.Models.ViewModels
         public int Chilometraggio { get; set; }
         public int LivelloCarburante { get; set; }
         public string? TipoCarburante { get; set; }
-        public string UrlImmagine { get; set; } = string.Empty;
+        public string LinkImmagine { get; set; } = string.Empty;
         public DateTime? DataPossesso { get; set; }
         public DateTime? RevisioneInizio { get; set; }
         public DateTime? RevisioneScadenza { get; set; }
@@ -131,10 +131,10 @@ namespace FleetManager.Models.ViewModels
     public class FormVeicoloViewModel
     {
         // Questo model serve sia per la creazione sia per la modifica.
-        public int? Id { get; set; }
+        public int? IdVeicolo { get; set; }
         public bool EAdmin { get; set; }
         public bool ECreazione { get; set; }
-        public string UrlRitorno { get; set; } = "/Dashboard";
+        public string PaginaRitorno { get; set; } = "/Dashboard";
 
         [Required]
         public string Modello { get; set; } = string.Empty;
@@ -156,7 +156,7 @@ namespace FleetManager.Models.ViewModels
         public string? TipoCarburante { get; set; }
         public string Stato { get; set; } = "non in uso";
         public DateTime? DataPossesso { get; set; }
-        public string? UrlImmagine { get; set; }
+        public string? LinkImmagine { get; set; }
         public DateTime? RevisioneInizio { get; set; }
         public DateTime? BolloInizio { get; set; }
         public DateTime? TagliandoInizio { get; set; }

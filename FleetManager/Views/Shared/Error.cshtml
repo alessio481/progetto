@@ -1,18 +1,18 @@
-@model ErrorViewModel
+@model ErroreViewModel
 @{
     ViewData["Title"] = "Errore";
 }
 
 <h1>Errore</h1>
-<p>Si è verificato un problema durante la richiesta.</p>
+<p>Si e verificato un problema durante la richiesta.</p>
 
-@if (Model.ShowRequestId)
+@if (Model.MostraIdRichiesta)
 {
     <p>
-        <strong>Codice richiesta:</strong> <code>@Model.RequestId</code>
+        <strong>Codice richiesta:</strong> <code>@Model.IdRichiesta</code>
     </p>
 }
 
 <p>
-    Se stai lavorando in locale, controlla il log del progetto o avvia l'app in ambiente di sviluppo per vedere più dettagli.
+    Se stai lavorando in locale, controlla il log del progetto o avvia l'app in ambiente di sviluppo per vedere piu dettagli.
 </p>

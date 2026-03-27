@@ -27,17 +27,17 @@
                         <div class="debug-dropdown server-dropdown">
                             <form asp-action="RipristinaDemo" method="post">
                                 @Html.AntiForgeryToken()
-                                <input type="hidden" name="urlRitorno" value="@Model.UrlRitorno" />
+                                <input type="hidden" name="paginaRitorno" value="@Model.PaginaRitorno" />
                                 <button type="submit">Ripristina Demo</button>
                             </form>
                             <form asp-action="SvuotaDatiDemo" method="post">
                                 @Html.AntiForgeryToken()
-                                <input type="hidden" name="urlRitorno" value="@Model.UrlRitorno" />
+                                <input type="hidden" name="paginaRitorno" value="@Model.PaginaRitorno" />
                                 <button type="submit">Svuota Dati</button>
                             </form>
                         </div>
                     </details>
-                    <a class="header-link-button" asp-action="Crea" asp-route-urlRitorno="@Model.UrlRitorno">Aggiungi Auto</a>
+                    <a class="header-link-button" asp-action="Crea" asp-route-paginaRitorno="@Model.PaginaRitorno">Aggiungi Auto</a>
                 }
                 <a class="header-link-button" asp-controller="Account" asp-action="Logout">Logout</a>
             </div>
@@ -59,16 +59,16 @@
             </div>
 
             @* Filtri semplici passati in GET: il codice resta facile da seguire. *@
-            <details class="search-panel" @AttributoAperto(Model.Filtri.CiSonoFiltriAttivi)>
+            <details class="search-panel" @AttributoAperto(Model.FiltriRicerca.CiSonoFiltriAttivi)>
                 <summary class="search-summary">Ricerca avanzata</summary>
                 <form asp-action="Index" method="get" class="search-grid">
                     <div class="search-field">
-                        <label asp-for="Filtri.Ricerca">Ricerca</label>
-                        <input asp-for="Filtri.Ricerca" placeholder="Modello, targa, stato, gruppo, carburante" />
+                        <label asp-for="FiltriRicerca.Ricerca">Ricerca</label>
+                        <input asp-for="FiltriRicerca.Ricerca" placeholder="Modello, targa, stato, gruppo, carburante" />
                     </div>
                     <div class="search-field">
-                        <label asp-for="Filtri.Gruppo">Gruppo</label>
-                        <select asp-for="Filtri.Gruppo">
+                        <label asp-for="FiltriRicerca.Gruppo">Gruppo</label>
+                        <select asp-for="FiltriRicerca.Gruppo">
                             <option value="">Tutti i gruppi</option>
                             <option value="FONDAZIONE SETTORE-1">FONDAZIONE SETTORE-1</option>
                             <option value="FONDAZIONE SETTORE-2">FONDAZIONE SETTORE-2</option>
@@ -76,8 +76,8 @@
                         </select>
                     </div>
                     <div class="search-field">
-                        <label asp-for="Filtri.Stato">Stato</label>
-                        <select asp-for="Filtri.Stato">
+                        <label asp-for="FiltriRicerca.Stato">Stato</label>
+                        <select asp-for="FiltriRicerca.Stato">
                             <option value="">Tutti gli stati</option>
                             <option value="non in uso">Non in uso</option>
                             <option value="in uso">In uso</option>
@@ -86,12 +86,12 @@
                         </select>
                     </div>
                     <div class="search-field">
-                        <label asp-for="Filtri.Assegnatario">Assegnatario</label>
-                        <input asp-for="Filtri.Assegnatario" placeholder="Nome assegnatario" />
+                        <label asp-for="FiltriRicerca.Assegnatario">Assegnatario</label>
+                        <input asp-for="FiltriRicerca.Assegnatario" placeholder="Nome assegnatario" />
                     </div>
                     <div class="search-field">
-                        <label asp-for="Filtri.LivelloCarburante">Carburante</label>
-                        <select asp-for="Filtri.LivelloCarburante">
+                        <label asp-for="FiltriRicerca.LivelloCarburante">Carburante</label>
+                        <select asp-for="FiltriRicerca.LivelloCarburante">
                             <option value="">Tutti i livelli</option>
                             <option value="2">Alto</option>
                             <option value="1">Medio</option>
@@ -111,13 +111,13 @@
                 <div class="summary-card"><span>Manutenzione</span><strong>@Model.TotaleManutenzione</strong></div>
             </div>
 
-            @if (!Model.Veicoli.Any())
+            @if (!Model.SchedeVeicoli.Any())
             {
                 <div class="empty-state">Nessun veicolo trovato con i filtri correnti.</div>
             }
             else
             {
-                foreach (var gruppo in Model.Veicoli.GroupBy(veicolo => veicolo.Gruppo))
+                foreach (var gruppo in Model.SchedeVeicoli.GroupBy(veicolo => veicolo.Gruppo))
                 {
                     <h3 class="group-header title-@ClasseCss(gruppo.Key)">@gruppo.Key</h3>
 
@@ -125,7 +125,7 @@
                         @foreach (var veicolo in gruppo)
                         {
                             <div class="car-card card-@ClasseCss(veicolo.Gruppo)">
-                                <div class="car-image" style="background-image:url('@veicolo.UrlImmagine')"></div>
+                                <div class="car-image" style="background-image:url('@veicolo.LinkImmagine')"></div>
                                 <div class="car-info">
                                     <div class="car-model">@veicolo.Modello</div>
                                     <div class="car-brand status-@ClasseCss(veicolo.Stato)">@veicolo.Stato</div>
@@ -149,8 +149,8 @@
                                         {
                                             <form asp-action="UsaOra" method="post" class="inline-form">
                                                 @Html.AntiForgeryToken()
-                                                <input type="hidden" name="id" value="@veicolo.Id" />
-                                                <input type="hidden" name="urlRitorno" value="@Model.UrlRitorno" />
+                                                <input type="hidden" name="id" value="@veicolo.IdVeicolo" />
+                                                <input type="hidden" name="paginaRitorno" value="@Model.PaginaRitorno" />
                                                 <button type="submit" class="btn-use-now btn-@ClasseCss(veicolo.Gruppo)">
                                                     @TestoPulsanteUso(veicolo.Stato)
                                                 </button>
@@ -161,8 +161,8 @@
                                         {
                                             <form asp-action="SegnalaManutenzione" method="post" class="inline-form">
                                                 @Html.AntiForgeryToken()
-                                                <input type="hidden" name="id" value="@veicolo.Id" />
-                                                <input type="hidden" name="urlRitorno" value="@Model.UrlRitorno" />
+                                                <input type="hidden" name="id" value="@veicolo.IdVeicolo" />
+                                                <input type="hidden" name="paginaRitorno" value="@Model.PaginaRitorno" />
                                                 <button type="submit" class="btn-secondary-action">Segnala manutenzione</button>
                                             </form>
                                         }
@@ -171,16 +171,16 @@
                                         {
                                             <form asp-action="ApprovaManutenzione" method="post" class="inline-form">
                                                 @Html.AntiForgeryToken()
-                                                <input type="hidden" name="id" value="@veicolo.Id" />
-                                                <input type="hidden" name="urlRitorno" value="@Model.UrlRitorno" />
+                                                <input type="hidden" name="id" value="@veicolo.IdVeicolo" />
+                                                <input type="hidden" name="paginaRitorno" value="@Model.PaginaRitorno" />
                                                 <button type="submit" class="btn-secondary-action">Metti in manutenzione</button>
                                             </form>
                                         }
 
                                         <a class="btn-edit btn-@ClasseCss(veicolo.Gruppo)"
                                            asp-action="Modifica"
-                                           asp-route-id="@veicolo.Id"
-                                           asp-route-urlRitorno="@Model.UrlRitorno">
+                                           asp-route-id="@veicolo.IdVeicolo"
+                                           asp-route-paginaRitorno="@Model.PaginaRitorno">
                                             @TestoPulsanteDettaglio(veicolo.PuoModificare)
                                         </a>
                                     </div>

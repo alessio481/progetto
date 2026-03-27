@@ -31,9 +31,9 @@ namespace FleetManager.Controllers
                 idRichiesta = Activity.Current.Id;
             }
 
-            var model = new ErrorViewModel
+            var model = new ErroreViewModel
             {
-                RequestId = idRichiesta
+                IdRichiesta = idRichiesta
             };
 
             return View(model);
