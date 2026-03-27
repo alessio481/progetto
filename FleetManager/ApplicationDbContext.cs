@@ -1,4 +1,3 @@
-using FleetManager.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FleetManager.Models
@@ -6,9 +5,11 @@ namespace FleetManager.Models
     public class ApplicationDbContext : DbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options) { }
+            : base(options)
+        {
+        }
 
-        // Teniamo solo le tabelle che usa davvero la demo.
+        // Queste sono le uniche tabelle usate davvero dalla demo.
         public DbSet<Utente> Utenti { get; set; }
         public DbSet<Veicolo> Veicoli { get; set; }
         public DbSet<Prenotazione> Prenotazioni { get; set; }

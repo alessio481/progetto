@@ -2,6 +2,15 @@
 @{
     Layout = null;
     ViewData["Title"] = "Login";
+    var errori = new List<string>();
+
+    foreach (var voce in ViewData.ModelState.Values)
+    {
+        foreach (var errore in voce.Errors)
+        {
+            errori.Add(errore.ErrorMessage);
+        }
+    }
 }
 <!DOCTYPE html>
 <html lang="it">
@@ -27,11 +36,11 @@
         </form>
 
         <div class="message-box" data-tone="error">
-            @if (!ViewData.ModelState.IsValid)
+            @if (errori.Count > 0)
             {
-                foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                foreach (var errore in errori)
                 {
-                    <div>@error.ErrorMessage</div>
+                    <div>@errore</div>
                 }
             }
         </div>

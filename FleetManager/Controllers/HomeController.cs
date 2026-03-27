@@ -8,6 +8,7 @@ namespace FleetManager.Controllers
     {
         public IActionResult Index()
         {
+            // Se l'utente ha gia fatto login, lo mandiamo subito in dashboard.
             if (User.Identity?.IsAuthenticated == true)
             {
                 return RedirectToAction("Index", "Dashboard");
@@ -24,7 +25,18 @@ namespace FleetManager.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            var idRichiesta = HttpContext.TraceIdentifier;
+            if (Activity.Current != null && !string.IsNullOrWhiteSpace(Activity.Current.Id))
+            {
+                idRichiesta = Activity.Current.Id;
+            }
+
+            var model = new ErrorViewModel
+            {
+                RequestId = idRichiesta
+            };
+
+            return View(model);
         }
     }
 }

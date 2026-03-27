@@ -24,7 +24,7 @@ namespace FleetManager.Models
         [StringLength(20)]
         public string Stato { get; set; } = "Disponibile";
 
-        // Nel progetto usiamo 0 = riserva, 1 = medio, 2 = alto.
+        // 0 = riserva, 1 = medio, 2 = alto.
         [Range(0, 2)]
         public int LivelloCarburante { get; set; } = 2;
 
@@ -34,7 +34,7 @@ namespace FleetManager.Models
         public string? ImageUrl { get; set; }
         public DateTime? DataPossesso { get; set; }
 
-        // Salviamo la data iniziale e ricaviamo la scadenza da quella.
+        // Salviamo la data iniziale e da quella ricaviamo la scadenza.
         public DateTime? RevisioneInizio { get; set; }
         public DateTime? RevisioneScadenza { get; set; }
         public DateTime? BolloInizio { get; set; }
@@ -47,8 +47,10 @@ namespace FleetManager.Models
         public DateTime DataCreazione { get; set; } = DateTime.Now;
         public DateTime? DataAggiornamento { get; set; }
 
+        // Se valorizzato, indica chi ha in carico il veicolo.
         public int? UtentePrenotatoID { get; set; }
         public Utente? UtentePrenotato { get; set; }
+
         public List<Prenotazione>? Prenotazioni { get; set; }
     }
 }

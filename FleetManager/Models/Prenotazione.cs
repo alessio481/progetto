@@ -1,15 +1,19 @@
-﻿using FleetManager.Models;
-
-public class Prenotazione
+namespace FleetManager.Models
 {
-    public int Id { get; set; }
+    public class Prenotazione
+    {
+        public int Id { get; set; }
 
-    public int VeicoloId { get; set; }
-    public Veicolo? Veicolo { get; set; }
+        public int VeicoloId { get; set; }
+        public Veicolo? Veicolo { get; set; }
 
-    public int UtenteId { get; set; }
-    public Utente? Utente { get; set; }
+        public int UtenteId { get; set; }
+        public Utente? Utente { get; set; }
 
-    public DateTime OraPrenotazione { get; set; }
-    public DateTime? OraRilascio { get; set; } // quando finisce
+        // Quando l'utente prende in carico il veicolo.
+        public DateTime OraPrenotazione { get; set; }
+
+        // Quando smette di usarlo.
+        public DateTime? OraRilascio { get; set; }
+    }
 }

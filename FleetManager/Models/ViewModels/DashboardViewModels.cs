@@ -13,9 +13,49 @@ namespace FleetManager.Models.ViewModels
         public FiltriDashboardViewModel Filtri { get; set; } = new();
         public List<SchedaVeicoloViewModel> Veicoli { get; set; } = new();
 
-        public int TotaleVeicoli => Veicoli.Count;
-        public int TotaleInUso => Veicoli.Count(veicolo => veicolo.Stato == "in uso");
-        public int TotaleManutenzione => Veicoli.Count(veicolo => veicolo.Stato.Contains("manutenzione"));
+        public int TotaleVeicoli
+        {
+            get
+            {
+                return Veicoli.Count;
+            }
+        }
+
+        public int TotaleInUso
+        {
+            get
+            {
+                var totale = 0;
+
+                foreach (var veicolo in Veicoli)
+                {
+                    if (veicolo.Stato == "in uso")
+                    {
+                        totale++;
+                    }
+                }
+
+                return totale;
+            }
+        }
+
+        public int TotaleManutenzione
+        {
+            get
+            {
+                var totale = 0;
+
+                foreach (var veicolo in Veicoli)
+                {
+                    if (veicolo.Stato.Contains("manutenzione"))
+                    {
+                        totale++;
+                    }
+                }
+
+                return totale;
+            }
+        }
     }
 
     public class FiltriDashboardViewModel
@@ -26,12 +66,38 @@ namespace FleetManager.Models.ViewModels
         public string? Assegnatario { get; set; }
         public int? LivelloCarburante { get; set; }
 
-        public bool CiSonoFiltriAttivi =>
-            !string.IsNullOrWhiteSpace(Ricerca) ||
-            !string.IsNullOrWhiteSpace(Gruppo) ||
-            !string.IsNullOrWhiteSpace(Stato) ||
-            !string.IsNullOrWhiteSpace(Assegnatario) ||
-            LivelloCarburante.HasValue;
+        public bool CiSonoFiltriAttivi
+        {
+            get
+            {
+                if (!string.IsNullOrWhiteSpace(Ricerca))
+                {
+                    return true;
+                }
+
+                if (!string.IsNullOrWhiteSpace(Gruppo))
+                {
+                    return true;
+                }
+
+                if (!string.IsNullOrWhiteSpace(Stato))
+                {
+                    return true;
+                }
+
+                if (!string.IsNullOrWhiteSpace(Assegnatario))
+                {
+                    return true;
+                }
+
+                if (LivelloCarburante.HasValue)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
     }
 
     public class SchedaVeicoloViewModel

@@ -5,48 +5,61 @@ namespace FleetManager;
 
 public static class DemoDataSeeder
 {
-    // Viene chiamato all'avvio: crea il DB se manca e carica i dati demo solo se il DB e vuoto.
-    public static async Task EnsureReadyAsync(ApplicationDbContext context)
+    // Crea il database se manca e carica i dati demo solo quando il DB è vuoto.
+    public static async Task PreparaDatabaseDemoAsync(ApplicationDbContext context)
     {
         await context.Database.EnsureCreatedAsync();
 
-        if (await context.Utenti.AnyAsync())
+        var ciSonoUtenti = await context.Utenti.AnyAsync();
+        if (ciSonoUtenti)
         {
             return;
         }
 
-        await ResetDemoAsync(context);
+        await RipristinaDatiDemoAsync(context);
     }
 
-    // Riparte da zero con un dataset piccolo ma abbastanza realistico per la demo.
-    public static async Task<int> ResetDemoAsync(ApplicationDbContext context)
+    // Ripulisce tutto e ricarica il dataset demo.
+    public static async Task<int> RipristinaDatiDemoAsync(ApplicationDbContext context)
     {
+        // Prima svuotiamo le tabelle che usiamo nella demo.
         context.Prenotazioni.RemoveRange(context.Prenotazioni);
         context.Veicoli.RemoveRange(context.Veicoli);
         context.Utenti.RemoveRange(context.Utenti);
         await context.SaveChangesAsync();
 
+        // Poi rimettiamo a zero gli ID automatici.
         await context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('Prenotazioni', RESEED, 0)");
         await context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('Veicoli', RESEED, 0)");
         await context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('Utenti', RESEED, 0)");
 
-        var users = CreateUsers();
-        context.Utenti.AddRange(users);
+        var utentiDemo = CreaUtentiDemo();
+        context.Utenti.AddRange(utentiDemo);
         await context.SaveChangesAsync();
 
-        var driverIds = users
-            .Where(user => user.Ruolo != "Admin")
-            .Select(user => user.UtenteID)
-            .ToArray();
+        // Ci servono solo gli ID degli utenti normali per le assegnazioni iniziali.
+        var listaIdDriver = new List<int>();
 
-        var cars = CreateCars(driverIds);
-        context.Veicoli.AddRange(cars);
+        foreach (var utente in utentiDemo)
+        {
+            if (utente.Ruolo == "Admin")
+            {
+                continue;
+            }
+
+            listaIdDriver.Add(utente.UtenteID);
+        }
+
+        var idDriver = listaIdDriver.ToArray();
+
+        var veicoliDemo = CreaVeicoliDemo(idDriver);
+        context.Veicoli.AddRange(veicoliDemo);
         await context.SaveChangesAsync();
 
-        return cars.Count;
+        return veicoliDemo.Count;
     }
 
-    private static List<Utente> CreateUsers()
+    private static List<Utente> CreaUtentiDemo()
     {
         return new List<Utente>
         {
@@ -69,9 +82,9 @@ public static class DemoDataSeeder
         };
     }
 
-    private static List<Veicolo> CreateCars(int[] driverIds)
+    private static List<Veicolo> CreaVeicoliDemo(int[] idDriver)
     {
-        var templates = new List<CarTemplate>
+        var righeDemo = new List<RigaVeicoloDemo>
         {
             new("Fiat", "Panda 1.0 Hybrid", "Auto", "HB731RK", 28640, 2, "Benzina", "InUso", "FONDAZIONE SETTORE-1", "2024-01-15", "2024-02-10", "2024-01-20", "2024-03-05", "2024-01-15", true, "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1200&q=80"),
             new("Toyota", "Yaris Hybrid", "Auto", "FX210ML", 51720, 1, "Ibrido", "Disponibile", "FONDAZIONE SETTORE-1", "2023-05-08", "2024-05-15", "2024-05-31", "2024-06-20", "2024-05-08", true, "https://images.unsplash.com/photo-1553440569-bcc63803a83d?auto=format&fit=crop&w=1200&q=80"),
@@ -93,58 +106,104 @@ public static class DemoDataSeeder
             new("Suzuki", "Vitara Hybrid", "Auto", "CL200XT", 26590, 2, "Ibrido", "Disponibile", "FONDAZIONE SETTORE-3", "2024-09-09", "2024-09-18", "2024-09-30", "2024-10-07", "2024-09-09", false, "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1200&q=80")
         };
 
-        var cars = new List<Veicolo>();
+        var veicoli = new List<Veicolo>();
 
-        for (var i = 0; i < templates.Count; i++)
+        for (var indice = 0; indice < righeDemo.Count; indice++)
         {
-            var template = templates[i];
-            var ownerId = template.HasOwner && i < driverIds.Length ? driverIds[i] : (int?)null;
+            var riga = righeDemo[indice];
+            int? idAssegnatario = null;
 
-            cars.Add(new Veicolo
+            if (riga.HaAssegnatario && indice < idDriver.Length)
             {
-                Targa = template.Targa,
-                Marca = template.Marca,
-                Modello = template.Modello,
-                Tipo = template.Tipo,
-                Stato = template.Stato,
-                LivelloCarburante = template.FuelLevel,
-                Chilometraggio = template.Chilometraggio,
-                Carburante = template.FuelType,
-                Gruppo = template.Gruppo,
-                ImageUrl = template.ImageUrl,
-                DataPossesso = DateTime.Parse(template.DataPossesso),
-                RevisioneInizio = DateTime.Parse(template.RevisioneInizio),
+                idAssegnatario = idDriver[indice];
+            }
+
+            var veicolo = new Veicolo
+            {
+                Targa = riga.Targa,
+                Marca = riga.Marca,
+                Modello = riga.Modello,
+                Tipo = riga.Tipo,
+                Stato = riga.Stato,
+                LivelloCarburante = riga.LivelloCarburante,
+                Chilometraggio = riga.Chilometraggio,
+                Carburante = riga.TipoCarburante,
+                Gruppo = riga.Gruppo,
+                ImageUrl = riga.UrlImmagine,
+                DataPossesso = DateTime.Parse(riga.DataPossesso),
+                RevisioneInizio = DateTime.Parse(riga.RevisioneInizio),
                 RevisioneScadenza = null,
-                BolloInizio = DateTime.Parse(template.BolloInizio),
+                BolloInizio = DateTime.Parse(riga.BolloInizio),
                 BolloScadenza = null,
-                TagliandoInizio = DateTime.Parse(template.TagliandoInizio),
+                TagliandoInizio = DateTime.Parse(riga.TagliandoInizio),
                 TagliandoScadenza = null,
-                AssicurazioneInizio = DateTime.Parse(template.AssicurazioneInizio),
+                AssicurazioneInizio = DateTime.Parse(riga.AssicurazioneInizio),
                 AssicurazioneScadenza = null,
-                UtentePrenotatoID = ownerId,
+                UtentePrenotatoID = idAssegnatario,
                 DataCreazione = DateTime.Now,
                 DataAggiornamento = DateTime.Now
-            });
+            };
+
+            veicoli.Add(veicolo);
         }
 
-        return cars;
+        return veicoli;
     }
 
-    private sealed record CarTemplate(
-        string Marca,
-        string Modello,
-        string Tipo,
-        string Targa,
-        int Chilometraggio,
-        int FuelLevel,
-        string FuelType,
-        string Stato,
-        string Gruppo,
-        string DataPossesso,
-        string RevisioneInizio,
-        string BolloInizio,
-        string TagliandoInizio,
-        string AssicurazioneInizio,
-        bool HasOwner,
-        string ImageUrl);
+    // Contiene una singola riga del dataset demo.
+    private sealed class RigaVeicoloDemo
+    {
+        public RigaVeicoloDemo(
+            string marca,
+            string modello,
+            string tipo,
+            string targa,
+            int chilometraggio,
+            int livelloCarburante,
+            string tipoCarburante,
+            string stato,
+            string gruppo,
+            string dataPossesso,
+            string revisioneInizio,
+            string bolloInizio,
+            string tagliandoInizio,
+            string assicurazioneInizio,
+            bool haAssegnatario,
+            string urlImmagine)
+        {
+            Marca = marca;
+            Modello = modello;
+            Tipo = tipo;
+            Targa = targa;
+            Chilometraggio = chilometraggio;
+            LivelloCarburante = livelloCarburante;
+            TipoCarburante = tipoCarburante;
+            Stato = stato;
+            Gruppo = gruppo;
+            DataPossesso = dataPossesso;
+            RevisioneInizio = revisioneInizio;
+            BolloInizio = bolloInizio;
+            TagliandoInizio = tagliandoInizio;
+            AssicurazioneInizio = assicurazioneInizio;
+            HaAssegnatario = haAssegnatario;
+            UrlImmagine = urlImmagine;
+        }
+
+        public string Marca { get; }
+        public string Modello { get; }
+        public string Tipo { get; }
+        public string Targa { get; }
+        public int Chilometraggio { get; }
+        public int LivelloCarburante { get; }
+        public string TipoCarburante { get; }
+        public string Stato { get; }
+        public string Gruppo { get; }
+        public string DataPossesso { get; }
+        public string RevisioneInizio { get; }
+        public string BolloInizio { get; }
+        public string TagliandoInizio { get; }
+        public string AssicurazioneInizio { get; }
+        public bool HaAssegnatario { get; }
+        public string UrlImmagine { get; }
+    }
 }

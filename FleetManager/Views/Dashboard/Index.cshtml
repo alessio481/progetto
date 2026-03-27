@@ -16,7 +16,7 @@
         <header>
             <div class="header-logo-container">
                 <img src="https://www.fondazionesimonini.it/imgs/logo.png" alt="Fondazione Simonini" style="height: 52px;">
-                <div class="header-user">@Model.NomeUtenteCorrente @(Model.EAdmin ? "| Admin" : "| Utente")</div>
+                <div class="header-user">@Model.NomeUtenteCorrente | @EtichettaRuolo(Model.EAdmin)</div>
             </div>
             <div class="header-title-center">DASHBOARD</div>
             <div class="header-buttons">
@@ -55,11 +55,11 @@
             }
 
             <div class="toolbar-note">
-                <strong>@Model.TotaleVeicoli @(Model.TotaleVeicoli == 1 ? "veicolo" : "veicoli")</strong>
+                <strong>@Model.TotaleVeicoli @TestoVeicoli(Model.TotaleVeicoli)</strong>
             </div>
 
             @* Filtri semplici passati in GET: il codice resta facile da seguire. *@
-            <details class="search-panel" @(Model.Filtri.CiSonoFiltriAttivi ? "open" : null)>
+            <details class="search-panel" @AttributoAperto(Model.Filtri.CiSonoFiltriAttivi)>
                 <summary class="search-summary">Ricerca avanzata</summary>
                 <form asp-action="Index" method="get" class="search-grid">
                     <div class="search-field">
@@ -119,20 +119,20 @@
             {
                 foreach (var gruppo in Model.Veicoli.GroupBy(veicolo => veicolo.Gruppo))
                 {
-                    <h3 class="group-header title-@gruppo.Key.ToLowerInvariant().Replace(" ", "-")">@gruppo.Key</h3>
+                    <h3 class="group-header title-@ClasseCss(gruppo.Key)">@gruppo.Key</h3>
 
                     <div class="cars-grid">
                         @foreach (var veicolo in gruppo)
                         {
-                            <div class="car-card card-@veicolo.Gruppo.ToLowerInvariant().Replace(" ", "-")">
+                            <div class="car-card card-@ClasseCss(veicolo.Gruppo)">
                                 <div class="car-image" style="background-image:url('@veicolo.UrlImmagine')"></div>
                                 <div class="car-info">
                                     <div class="car-model">@veicolo.Modello</div>
-                                    <div class="car-brand status-@veicolo.Stato.Replace(" ", "-")">@veicolo.Stato</div>
+                                    <div class="car-brand status-@ClasseCss(veicolo.Stato)">@veicolo.Stato</div>
                                     <div class="car-targa">Targa: @veicolo.Targa</div>
-                                    <div class="car-detail"><span>Assegnatario:</span><strong>@(string.IsNullOrWhiteSpace(veicolo.NomeAssegnatario) ? "-" : veicolo.NomeAssegnatario)</strong></div>
+                                    <div class="car-detail"><span>Assegnatario:</span><strong>@NomeAssegnatario(veicolo.NomeAssegnatario)</strong></div>
                                     <div class="car-detail"><span>KM:</span><strong>@veicolo.Chilometraggio.ToString("N0", new System.Globalization.CultureInfo("it-IT"))</strong></div>
-                                    <div class="car-detail"><span>Carburante:</span><strong>@(veicolo.LivelloCarburante == 2 ? "Alto" : veicolo.LivelloCarburante == 1 ? "Medio" : "Riserva")</strong></div>
+                                    <div class="car-detail"><span>Carburante:</span><strong>@EtichettaCarburante(veicolo.LivelloCarburante)</strong></div>
 
                                     <details class="card-details">
                                         <summary>Scadenze</summary>
@@ -151,8 +151,8 @@
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="id" value="@veicolo.Id" />
                                                 <input type="hidden" name="urlRitorno" value="@Model.UrlRitorno" />
-                                                <button type="submit" class="btn-use-now btn-@veicolo.Gruppo.ToLowerInvariant().Replace(" ", "-")">
-                                                    @(veicolo.Stato == "in uso" ? "Smetti di usare" : "Utilizza ora")
+                                                <button type="submit" class="btn-use-now btn-@ClasseCss(veicolo.Gruppo)">
+                                                    @TestoPulsanteUso(veicolo.Stato)
                                                 </button>
                                             </form>
                                         }
@@ -177,11 +177,11 @@
                                             </form>
                                         }
 
-                                        <a class="btn-edit btn-@veicolo.Gruppo.ToLowerInvariant().Replace(" ", "-")"
+                                        <a class="btn-edit btn-@ClasseCss(veicolo.Gruppo)"
                                            asp-action="Modifica"
                                            asp-route-id="@veicolo.Id"
                                            asp-route-urlRitorno="@Model.UrlRitorno">
-                                            @(veicolo.PuoModificare ? "Modifica" : "Dettagli")
+                                            @TestoPulsanteDettaglio(veicolo.PuoModificare)
                                         </a>
                                     </div>
                                 </div>
@@ -196,6 +196,91 @@
 </html>
 
 @functions {
+    private string AttributoAperto(bool aperto)
+    {
+        if (aperto)
+        {
+            return "open";
+        }
+
+        return string.Empty;
+    }
+
+    private string EtichettaRuolo(bool eAdmin)
+    {
+        if (eAdmin)
+        {
+            return "Admin";
+        }
+
+        return "Utente";
+    }
+
+    private string TestoVeicoli(int totaleVeicoli)
+    {
+        if (totaleVeicoli == 1)
+        {
+            return "veicolo";
+        }
+
+        return "veicoli";
+    }
+
+    private string ClasseCss(string? testo)
+    {
+        if (string.IsNullOrWhiteSpace(testo))
+        {
+            return "vuoto";
+        }
+
+        return testo.Trim().ToLowerInvariant().Replace(" ", "-");
+    }
+
+    private string NomeAssegnatario(string? nomeAssegnatario)
+    {
+        if (string.IsNullOrWhiteSpace(nomeAssegnatario))
+        {
+            return "-";
+        }
+
+        return nomeAssegnatario;
+    }
+
+    private string EtichettaCarburante(int livelloCarburante)
+    {
+        if (livelloCarburante == 2)
+        {
+            return "Alto";
+        }
+
+        if (livelloCarburante == 1)
+        {
+            return "Medio";
+        }
+
+        return "Riserva";
+    }
+
+    private string TestoPulsanteUso(string stato)
+    {
+        if (stato == "in uso")
+        {
+            return "Smetti di usare";
+        }
+
+        return "Utilizza ora";
+    }
+
+    private string TestoPulsanteDettaglio(bool puoModificare)
+    {
+        if (puoModificare)
+        {
+            return "Modifica";
+        }
+
+        return "Dettagli";
+    }
+
     private string FormattaPeriodo(DateTime? dataInizio, DateTime? dataFine)
     {
         if (!dataInizio.HasValue && !dataFine.HasValue)
@@ -203,8 +288,18 @@
             return "-";
         }
 
-        var inizio = dataInizio?.ToString("dd/MM/yyyy") ?? "-";
-        var fine = dataFine?.ToString("dd/MM/yyyy") ?? "-";
+        var inizio = "-";
+        if (dataInizio.HasValue)
+        {
+            inizio = dataInizio.Value.ToString("dd/MM/yyyy");
+        }
+
+        var fine = "-";
+        if (dataFine.HasValue)
+        {
+            fine = dataFine.Value.ToString("dd/MM/yyyy");
+        }
+
         return inizio + " - " + fine;
     }
 }

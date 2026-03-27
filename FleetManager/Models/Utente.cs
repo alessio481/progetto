@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace FleetManager.Models
 {
@@ -27,16 +27,23 @@ namespace FleetManager.Models
         [DataType(DataType.Date)]
         public DateTime DataNascita { get; set; }
 
+        // Nel progetto usiamo solo due ruoli: Admin e Driver.
         [Required]
         [Display(Name = "Ruolo")]
-        public string Ruolo { get; set; } = "Driver"; // Admin, Driver
+        public string Ruolo { get; set; } = "Driver";
 
         [Display(Name = "Data Registrazione")]
         public DateTime DataRegistrazione { get; set; } = DateTime.Now;
 
-        // Comodo in view e API per evitare di concatenare nome e cognome ogni volta.
+        // Evitiamo di scrivere Nome + Cognome ogni volta nelle view.
         [Display(Name = "Nome Completo")]
-        public string NomeCompleto => $"{Nome} {Cognome}";
+        public string NomeCompleto
+        {
+            get
+            {
+                return Nome + " " + Cognome;
+            }
+        }
 
         public List<Prenotazione>? Prenotazioni { get; set; }
     }

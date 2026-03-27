@@ -1,14 +1,23 @@
 @model FleetManager.Models.ViewModels.FormVeicoloViewModel
 @{
     Layout = null;
-    ViewData["Title"] = Model.ECreazione ? "Nuovo Veicolo" : "Modifica Veicolo";
+    var titoloPagina = "Modifica Veicolo";
+    var titoloSezione = "Modifica veicolo";
+
+    if (Model.ECreazione)
+    {
+        titoloPagina = "Nuovo Veicolo";
+        titoloSezione = "Nuovo veicolo";
+    }
+
+    ViewData["Title"] = titoloPagina;
 }
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Fondazione Simonini | @ViewData["Title"]</title>
+    <title>Fondazione Simonini | @titoloPagina</title>
     <link rel="stylesheet" href="~/css/fleet.css" asp-append-version="true" />
 </head>
 <body>
@@ -28,8 +37,8 @@
         <div class="container">
             <div class="edit-shell">
                 <section class="edit-panel">
-                    <h1>@(Model.ECreazione ? "Nuovo veicolo" : "Modifica veicolo")</h1>
-                    <p class="edit-subtitle">Pagina MVC classica: leggi i campi, modifichi e salvi con un normale POST.</p>
+                    <h1>@titoloSezione</h1>
+                    <p class="edit-subtitle">Pagina semplice: apri il form, modifichi i dati e salvi.</p>
 
                     @* Tutta la modifica del veicolo passa da questo form. *@
                     <form asp-action="Salva" method="post" class="edit-form">

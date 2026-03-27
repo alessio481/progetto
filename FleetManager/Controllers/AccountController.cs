@@ -36,30 +36,55 @@ namespace FleetManager.Controllers
                 return View(model);
             }
 
-            var email = model.Email.Trim();
-            var utente = await _context.Utenti.FirstOrDefaultAsync(u => u.Email == email);
-            if (utente == null || utente.Password != model.Password)
+            var emailInserita = model.Email.Trim();
+            var passwordInserita = model.Password;
+
+            // Cerchiamo l'utente per email.
+            var utente = await _context.Utenti.FirstOrDefaultAsync(item => item.Email == emailInserita);
+            if (utente == null)
             {
                 ModelState.AddModelError(string.Empty, "Credenziali non valide.");
                 return View(model);
             }
 
-            var role = string.Equals(utente.Ruolo, "Admin", StringComparison.OrdinalIgnoreCase) ? "admin" : "user";
-            var displayName = string.IsNullOrWhiteSpace(utente.NomeCompleto) ? utente.Email : utente.NomeCompleto;
+            if (utente.Password != passwordInserita)
+            {
+                ModelState.AddModelError(string.Empty, "Credenziali non valide.");
+                return View(model);
+            }
 
+            var ruolo = "user";
+            var ruoloPulito = string.Empty;
+            if (!string.IsNullOrWhiteSpace(utente.Ruolo))
+            {
+                ruoloPulito = utente.Ruolo.Trim().ToLowerInvariant();
+            }
+
+            if (ruoloPulito == "admin")
+            {
+                ruolo = "admin";
+            }
+
+            var nomeDaMostrare = utente.Email;
+            if (!string.IsNullOrWhiteSpace(utente.NomeCompleto))
+            {
+                nomeDaMostrare = utente.NomeCompleto;
+            }
+
+            // Questi dati finiscono nel cookie e servono per riconoscere l'utente.
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, displayName),
+                new Claim(ClaimTypes.Name, nomeDaMostrare),
                 new Claim(ClaimTypes.NameIdentifier, utente.UtenteID.ToString()),
                 new Claim("matricola", utente.UtenteID.ToString()),
                 new Claim(ClaimTypes.Email, utente.Email),
-                new Claim(ClaimTypes.Role, role)
+                new Claim(ClaimTypes.Role, ruolo)
             };
 
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            await HttpContext.SignInAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(identity));
+            var identita = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identita);
+
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
             return RedirectToAction("Index", "Dashboard");
         }
