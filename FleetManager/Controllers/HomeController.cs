@@ -17,11 +17,6 @@ namespace FleetManager.Controllers
             return RedirectToAction("Login", "Account");
         }
 
-        public IActionResult Privacy()
-        {
-            return RedirectToAction("Index");
-        }
-
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

@@ -12,6 +12,5 @@ namespace FleetManager.Models
         // Queste sono le uniche tabelle usate davvero dalla demo.
         public DbSet<Utente> Utenti { get; set; }
         public DbSet<Veicolo> Veicoli { get; set; }
-        public DbSet<Prenotazione> Prenotazioni { get; set; }
     }
 }

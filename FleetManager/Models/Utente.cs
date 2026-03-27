@@ -44,7 +44,5 @@ namespace FleetManager.Models
                 return Nome + " " + Cognome;
             }
         }
-
-        public List<Prenotazione>? Prenotazioni { get; set; }
     }
 }

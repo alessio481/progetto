@@ -355,7 +355,6 @@ namespace FleetManager.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SvuotaDatiDemo(string? paginaRitorno)
         {
-            _context.Prenotazioni.RemoveRange(_context.Prenotazioni);
             _context.Veicoli.RemoveRange(_context.Veicoli);
             await _context.SaveChangesAsync();
 

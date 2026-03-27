@@ -23,13 +23,11 @@ public static class DemoDataSeeder
     public static async Task<int> RipristinaDatiDemoAsync(ApplicationDbContext context)
     {
         // Prima svuotiamo le tabelle che usiamo nella demo.
-        context.Prenotazioni.RemoveRange(context.Prenotazioni);
         context.Veicoli.RemoveRange(context.Veicoli);
         context.Utenti.RemoveRange(context.Utenti);
         await context.SaveChangesAsync();
 
         // Poi rimettiamo a zero gli ID automatici.
-        await context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('Prenotazioni', RESEED, 0)");
         await context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('Veicoli', RESEED, 0)");
         await context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('Utenti', RESEED, 0)");
 

@@ -50,7 +50,5 @@ namespace FleetManager.Models
         // Se valorizzato, indica chi ha in carico il veicolo.
         public int? UtentePrenotatoID { get; set; }
         public Utente? UtentePrenotato { get; set; }
-
-        public List<Prenotazione>? Prenotazioni { get; set; }
     }
 }
