@@ -26,18 +26,14 @@
                         <summary>Debug</summary>
                         <div class="debug-dropdown server-dropdown">
                             <form asp-action="RipristinaDemo" method="post">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="paginaRitorno" value="@Model.PaginaRitorno" />
                                 <button type="submit">Ripristina Demo</button>
                             </form>
                             <form asp-action="SvuotaDatiDemo" method="post">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="paginaRitorno" value="@Model.PaginaRitorno" />
                                 <button type="submit">Svuota Dati</button>
                             </form>
                         </div>
                     </details>
-                    <a class="header-link-button" asp-action="Crea" asp-route-paginaRitorno="@Model.PaginaRitorno">Aggiungi Auto</a>
+                    <a class="header-link-button" asp-action="Crea">Aggiungi Auto</a>
                 }
                 <a class="header-link-button" asp-controller="Account" asp-action="Logout">Logout</a>
             </div>
@@ -148,9 +144,7 @@
                                         @if (veicolo.PuoUsareOra)
                                         {
                                             <form asp-action="UsaOra" method="post" class="inline-form">
-                                                @Html.AntiForgeryToken()
                                                 <input type="hidden" name="id" value="@veicolo.IdVeicolo" />
-                                                <input type="hidden" name="paginaRitorno" value="@Model.PaginaRitorno" />
                                                 <button type="submit" class="btn-use-now btn-@ClasseCss(veicolo.Gruppo)">
                                                     @TestoPulsanteUso(veicolo.Stato)
                                                 </button>
@@ -160,9 +154,7 @@
                                         @if (veicolo.PuoSegnalareManutenzione)
                                         {
                                             <form asp-action="SegnalaManutenzione" method="post" class="inline-form">
-                                                @Html.AntiForgeryToken()
                                                 <input type="hidden" name="id" value="@veicolo.IdVeicolo" />
-                                                <input type="hidden" name="paginaRitorno" value="@Model.PaginaRitorno" />
                                                 <button type="submit" class="btn-secondary-action">Segnala manutenzione</button>
                                             </form>
                                         }
@@ -170,17 +162,14 @@
                                         @if (veicolo.PuoApprovareManutenzione)
                                         {
                                             <form asp-action="ApprovaManutenzione" method="post" class="inline-form">
-                                                @Html.AntiForgeryToken()
                                                 <input type="hidden" name="id" value="@veicolo.IdVeicolo" />
-                                                <input type="hidden" name="paginaRitorno" value="@Model.PaginaRitorno" />
                                                 <button type="submit" class="btn-secondary-action">Metti in manutenzione</button>
                                             </form>
                                         }
 
                                         <a class="btn-edit btn-@ClasseCss(veicolo.Gruppo)"
                                            asp-action="Modifica"
-                                           asp-route-id="@veicolo.IdVeicolo"
-                                           asp-route-paginaRitorno="@Model.PaginaRitorno">
+                                           asp-route-id="@veicolo.IdVeicolo">
                                             @TestoPulsanteDettaglio(veicolo.PuoModificare)
                                         </a>
                                     </div>

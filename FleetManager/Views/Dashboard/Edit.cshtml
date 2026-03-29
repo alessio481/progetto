@@ -29,7 +29,7 @@
             </div>
             <div class="header-title-center">VEICOLO</div>
             <div class="header-buttons">
-                <a class="header-link-button" href="@Model.PaginaRitorno">Torna alla dashboard</a>
+                <a class="header-link-button" asp-controller="Dashboard" asp-action="Index">Torna alla dashboard</a>
                 <a class="header-link-button" asp-controller="Account" asp-action="Logout">Logout</a>
             </div>
         </header>
@@ -42,11 +42,9 @@
 
                     @* Tutta la modifica del veicolo passa da questo form. *@
                     <form asp-action="Salva" method="post" class="edit-form">
-                        @Html.AntiForgeryToken()
                         <input asp-for="IdVeicolo" type="hidden" />
                         <input asp-for="ECreazione" type="hidden" />
                         <input asp-for="EAdmin" type="hidden" />
-                        <input asp-for="PaginaRitorno" type="hidden" />
 
                         <div asp-validation-summary="ModelOnly" class="validation-box"></div>
 
@@ -147,7 +145,7 @@
                         </section>
 
                         <div class="modal-footer">
-                            <a class="btn-cancel link-button" href="@Model.PaginaRitorno">Annulla</a>
+                            <a class="btn-cancel link-button" asp-controller="Dashboard" asp-action="Index">Annulla</a>
                             <button class="btn-save" type="submit">Salva</button>
                         </div>
                     </form>
@@ -155,9 +153,7 @@
                     @if (Model.EAdmin && !Model.ECreazione && Model.IdVeicolo.HasValue)
                     {
                         <form asp-action="Elimina" method="post" class="delete-form">
-                            @Html.AntiForgeryToken()
                             <input type="hidden" name="id" value="@Model.IdVeicolo" />
-                            <input type="hidden" name="paginaRitorno" value="@Model.PaginaRitorno" />
                             <button class="btn-delete" type="submit">Elimina veicolo</button>
                         </form>
                     }

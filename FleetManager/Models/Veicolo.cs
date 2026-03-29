@@ -34,15 +34,11 @@ namespace FleetManager.Models
         public string? ImageUrl { get; set; }
         public DateTime? DataPossesso { get; set; }
 
-        // Salviamo la data iniziale e da quella ricaviamo la scadenza.
+        // Salviamo solo la data iniziale. La scadenza si calcola nel controller.
         public DateTime? RevisioneInizio { get; set; }
-        public DateTime? RevisioneScadenza { get; set; }
         public DateTime? BolloInizio { get; set; }
-        public DateTime? BolloScadenza { get; set; }
         public DateTime? TagliandoInizio { get; set; }
-        public DateTime? TagliandoScadenza { get; set; }
         public DateTime? AssicurazioneInizio { get; set; }
-        public DateTime? AssicurazioneScadenza { get; set; }
 
         public DateTime DataCreazione { get; set; } = DateTime.Now;
         public DateTime? DataAggiornamento { get; set; }

@@ -5,7 +5,7 @@ namespace FleetManager;
 
 public static class DemoDataSeeder
 {
-    // Crea il database se manca e carica i dati demo solo quando il DB è vuoto.
+    // Se il database e vuoto, carichiamo un piccolo dataset demo.
     public static async Task PreparaDatabaseDemoAsync(ApplicationDbContext context)
     {
         await context.Database.EnsureCreatedAsync();
@@ -19,15 +19,13 @@ public static class DemoDataSeeder
         await RipristinaDatiDemoAsync(context);
     }
 
-    // Ripulisce tutto e ricarica il dataset demo.
+    // Svuota i dati attuali e ricarica gli utenti e i veicoli demo.
     public static async Task<int> RipristinaDatiDemoAsync(ApplicationDbContext context)
     {
-        // Prima svuotiamo le tabelle che usiamo nella demo.
         context.Veicoli.RemoveRange(context.Veicoli);
         context.Utenti.RemoveRange(context.Utenti);
         await context.SaveChangesAsync();
 
-        // Poi rimettiamo a zero gli ID automatici.
         await context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('Veicoli', RESEED, 0)");
         await context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('Utenti', RESEED, 0)");
 
@@ -35,7 +33,6 @@ public static class DemoDataSeeder
         context.Utenti.AddRange(utentiDemo);
         await context.SaveChangesAsync();
 
-        // Ci servono solo gli ID degli utenti normali per le assegnazioni iniziali.
         var listaIdDriver = new List<int>();
 
         foreach (var utente in utentiDemo)
@@ -48,9 +45,7 @@ public static class DemoDataSeeder
             listaIdDriver.Add(utente.UtenteID);
         }
 
-        var idDriver = listaIdDriver.ToArray();
-
-        var veicoliDemo = CreaVeicoliDemo(idDriver);
+        var veicoliDemo = CreaVeicoliDemo(listaIdDriver.ToArray());
         context.Veicoli.AddRange(veicoliDemo);
         await context.SaveChangesAsync();
 
@@ -116,7 +111,7 @@ public static class DemoDataSeeder
                 idAssegnatario = idDriver[indice];
             }
 
-            var veicolo = new Veicolo
+            veicoli.Add(new Veicolo
             {
                 Targa = riga.Targa,
                 Marca = riga.Marca,
@@ -130,19 +125,13 @@ public static class DemoDataSeeder
                 ImageUrl = riga.UrlImmagine,
                 DataPossesso = DateTime.Parse(riga.DataPossesso),
                 RevisioneInizio = DateTime.Parse(riga.RevisioneInizio),
-                RevisioneScadenza = null,
                 BolloInizio = DateTime.Parse(riga.BolloInizio),
-                BolloScadenza = null,
                 TagliandoInizio = DateTime.Parse(riga.TagliandoInizio),
-                TagliandoScadenza = null,
                 AssicurazioneInizio = DateTime.Parse(riga.AssicurazioneInizio),
-                AssicurazioneScadenza = null,
                 UtentePrenotatoID = idAssegnatario,
                 DataCreazione = DateTime.Now,
                 DataAggiornamento = DateTime.Now
-            };
-
-            veicoli.Add(veicolo);
+            });
         }
 
         return veicoli;

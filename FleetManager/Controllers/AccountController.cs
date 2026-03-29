@@ -76,7 +76,6 @@ namespace FleetManager.Controllers
             {
                 new Claim(ClaimTypes.Name, nomeDaMostrare),
                 new Claim(ClaimTypes.NameIdentifier, utente.UtenteID.ToString()),
-                new Claim("matricola", utente.UtenteID.ToString()),
                 new Claim(ClaimTypes.Email, utente.Email),
                 new Claim(ClaimTypes.Role, ruolo)
             };

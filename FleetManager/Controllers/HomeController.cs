@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using FleetManager.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,15 +19,10 @@ namespace FleetManager.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            var idRichiesta = HttpContext.TraceIdentifier;
-            if (Activity.Current != null && !string.IsNullOrWhiteSpace(Activity.Current.Id))
-            {
-                idRichiesta = Activity.Current.Id;
-            }
-
+            // Per la pagina di errore ci basta l'id della richiesta corrente.
             var model = new ErroreViewModel
             {
-                IdRichiesta = idRichiesta
+                IdRichiesta = HttpContext.TraceIdentifier
             };
 
             return View(model);

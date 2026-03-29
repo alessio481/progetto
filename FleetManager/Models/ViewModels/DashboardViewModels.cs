@@ -9,7 +9,6 @@ namespace FleetManager.Models.ViewModels
         public string NomeUtenteCorrente { get; set; } = string.Empty;
         public string? MessaggioOperazione { get; set; }
         public string? MessaggioErrore { get; set; }
-        public string PaginaRitorno { get; set; } = "/Dashboard";
         public FiltriDashboardViewModel FiltriRicerca { get; set; } = new();
         public List<SchedaVeicoloViewModel> SchedeVeicoli { get; set; } = new();
 
@@ -108,7 +107,6 @@ namespace FleetManager.Models.ViewModels
         public string Stato { get; set; } = "non in uso";
         public string Gruppo { get; set; } = string.Empty;
         public string? NomeAssegnatario { get; set; }
-        public int? IdAssegnatario { get; set; }
         public int Chilometraggio { get; set; }
         public int LivelloCarburante { get; set; }
         public string? TipoCarburante { get; set; }
@@ -134,7 +132,6 @@ namespace FleetManager.Models.ViewModels
         public int? IdVeicolo { get; set; }
         public bool EAdmin { get; set; }
         public bool ECreazione { get; set; }
-        public string PaginaRitorno { get; set; } = "/Dashboard";
 
         [Required]
         public string Modello { get; set; } = string.Empty;
