@@ -30,7 +30,7 @@ namespace FleetManager.Models
 
         public int Chilometraggio { get; set; }
         public string? Carburante { get; set; }
-        public string? Gruppo { get; set; }
+        public int Gruppo { get; set; } = 1;
         public string? ImageUrl { get; set; }
         public DateTime? DataPossesso { get; set; }
 

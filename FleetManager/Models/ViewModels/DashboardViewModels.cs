@@ -60,7 +60,7 @@ namespace FleetManager.Models.ViewModels
     public class FiltriDashboardViewModel
     {
         public string? Ricerca { get; set; }
-        public string? Gruppo { get; set; }
+        public int? Gruppo { get; set; }
         public string? Stato { get; set; }
         public string? Assegnatario { get; set; }
         public int? LivelloCarburante { get; set; }
@@ -74,7 +74,7 @@ namespace FleetManager.Models.ViewModels
                     return true;
                 }
 
-                if (!string.IsNullOrWhiteSpace(Gruppo))
+                if (Gruppo.HasValue)
                 {
                     return true;
                 }
@@ -142,7 +142,7 @@ namespace FleetManager.Models.ViewModels
         [Display(Name = "Assegnatario")]
         public int? IdAssegnatario { get; set; }
 
-        public string Gruppo { get; set; } = "FONDAZIONE SETTORE-1";
+        public int Gruppo { get; set; } = 1;
 
         [Range(0, int.MaxValue)]
         public int Chilometraggio { get; set; }
@@ -169,5 +169,26 @@ namespace FleetManager.Models.ViewModels
     {
         public string Valore { get; set; } = string.Empty;
         public string Testo { get; set; } = string.Empty;
+    }
+
+    public class FormUtenteViewModel
+    {
+        [Required]
+        public string Nome { get; set; } = string.Empty;
+
+        [Required]
+        public string Cognome { get; set; } = string.Empty;
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
+        
+        public string Password { get; set; } = string.Empty;
+
+        [DataType(DataType.Date)]
+        [Required]
+        public DateTime? DataNascita { get; set; }
     }
 }

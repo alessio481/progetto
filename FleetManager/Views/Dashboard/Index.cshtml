@@ -33,6 +33,7 @@
                             </form>
                         </div>
                     </details>
+                    <a class="header-link-button" asp-action="CreaUtente">Aggiungi Utente</a>
                     <a class="header-link-button" asp-action="Crea">Aggiungi Auto</a>
                 }
                 <a class="header-link-button" asp-controller="Account" asp-action="Logout">Logout</a>
@@ -66,9 +67,9 @@
                         <label asp-for="FiltriRicerca.Gruppo">Gruppo</label>
                         <select asp-for="FiltriRicerca.Gruppo">
                             <option value="">Tutti i gruppi</option>
-                            <option value="FONDAZIONE SETTORE-1">FONDAZIONE SETTORE-1</option>
-                            <option value="FONDAZIONE SETTORE-2">FONDAZIONE SETTORE-2</option>
-                            <option value="FONDAZIONE SETTORE-3">FONDAZIONE SETTORE-3</option>
+                            <option value="1">FONDAZIONE SETTORE-1</option>
+                            <option value="2">FONDAZIONE SETTORE-2</option>
+                            <option value="3">FONDAZIONE SETTORE-3</option>
                         </select>
                     </div>
                     <div class="search-field">

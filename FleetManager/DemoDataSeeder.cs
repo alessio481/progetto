@@ -79,24 +79,24 @@ public static class DemoDataSeeder
     {
         var righeDemo = new List<RigaVeicoloDemo>
         {
-            new("Fiat", "Panda 1.0 Hybrid", "Auto", "HB731RK", 28640, 2, "Benzina", "InUso", "FONDAZIONE SETTORE-1", "2024-01-15", "2024-02-10", "2024-01-20", "2024-03-05", "2024-01-15", true, "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1200&q=80"),
-            new("Toyota", "Yaris Hybrid", "Auto", "FX210ML", 51720, 1, "Ibrido", "Disponibile", "FONDAZIONE SETTORE-1", "2023-05-08", "2024-05-15", "2024-05-31", "2024-06-20", "2024-05-08", true, "https://images.unsplash.com/photo-1553440569-bcc63803a83d?auto=format&fit=crop&w=1200&q=80"),
-            new("Volkswagen", "Golf 2.0 TDI", "Auto", "GT904PN", 93110, 1, "Diesel", "Manutenzione", "FONDAZIONE SETTORE-2", "2022-01-19", "2024-12-20", "2024-12-31", "2024-08-22", "2024-12-19", true, "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80"),
-            new("Fiat", "500e Icon", "Auto", "EV552TS", 18800, 2, "Elettrico", "InUso", "FONDAZIONE SETTORE-3", "2025-02-03", "2025-02-28", "2025-02-28", "2025-02-15", "2025-02-03", true, "https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=1200&q=80"),
-            new("Renault", "Clio dCi", "Auto", "ZA118KL", 67400, 1, "Diesel", "Disponibile", "FONDAZIONE SETTORE-2", "2021-09-30", "2024-09-30", "2024-10-12", "2024-11-01", "2024-09-30", true, "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1200&q=80"),
-            new("Ford", "Transit Custom", "Furgone", "VF620AR", 121300, 0, "Diesel", "InUso", "FONDAZIONE SETTORE-2", "2020-06-11", "2024-06-11", "2024-06-30", "2024-07-10", "2024-06-11", true, "https://images.unsplash.com/photo-1609521263047-f8f205293f24?auto=format&fit=crop&w=1200&q=80"),
-            new("Peugeot", "208 BlueHDi", "Auto", "LM406XC", 44280, 2, "Diesel", "RichiestaManu", "FONDAZIONE SETTORE-1", "2023-03-21", "2024-03-25", "2024-03-31", "2024-04-18", "2024-03-21", true, "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80"),
-            new("Jeep", "Renegade 4xe", "Auto", "QW771ED", 35600, 2, "Ibrido Plug-in", "InUso", "FONDAZIONE SETTORE-3", "2024-04-09", "2024-04-30", "2024-04-30", "2024-05-16", "2024-04-09", true, "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80"),
-            new("Citroen", "C3 Aircross", "Auto", "NB284PL", 26450, 1, "Benzina", "Disponibile", "FONDAZIONE SETTORE-1", "2024-07-14", "2024-07-20", "2024-07-31", "2024-08-25", "2024-07-14", true, "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=1200&q=80"),
-            new("Mercedes", "Vito Tourer", "Furgone", "TR992CF", 84550, 1, "Diesel", "InUso", "FONDAZIONE SETTORE-2", "2021-11-18", "2024-11-18", "2024-11-30", "2024-12-02", "2024-11-18", true, "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1200&q=80"),
-            new("Opel", "Corsa Edition", "Auto", "MK330SV", 30870, 2, "Benzina", "Disponibile", "FONDAZIONE SETTORE-3", "2024-10-02", "2024-10-08", "2024-10-31", "2024-11-14", "2024-10-02", true, "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1200&q=80"),
-            new("Nissan", "Qashqai e-Power", "Auto", "AS513DL", 22510, 2, "Ibrido", "InUso", "FONDAZIONE SETTORE-1", "2025-01-17", "2025-01-20", "2025-01-31", "2025-02-06", "2025-01-17", true, "https://images.unsplash.com/photo-1493238792000-8113da705763?auto=format&fit=crop&w=1200&q=80"),
-            new("Hyundai", "i20 ConnectLine", "Auto", "PL208FT", 31840, 1, "Benzina", "Disponibile", "FONDAZIONE SETTORE-3", "2024-03-12", "2024-03-20", "2024-03-31", "2024-04-10", "2024-03-12", true, "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1200&q=80"),
-            new("Kia", "Sportage HEV", "Auto", "DS641VM", 27110, 2, "Ibrido", "InUso", "FONDAZIONE SETTORE-1", "2024-06-03", "2024-06-12", "2024-06-30", "2024-07-09", "2024-06-03", true, "https://images.unsplash.com/photo-1504215680853-026ed2a45def?auto=format&fit=crop&w=1200&q=80"),
-            new("Peugeot", "Partner BlueHDi", "Furgone", "FR520NB", 76420, 1, "Diesel", "Disponibile", "FONDAZIONE SETTORE-2", "2022-09-07", "2024-09-10", "2024-09-30", "2024-10-01", "2024-09-07", true, "https://images.unsplash.com/photo-1494976388901-750d2e7d52a9?auto=format&fit=crop&w=1200&q=80"),
-            new("Renault", "Kangoo Van", "Furgone", "AA551FE", 110240, 0, "Diesel", "Manutenzione", "FONDAZIONE SETTORE-2", "2020-12-03", "2024-12-12", "2024-12-31", "2025-01-09", "2024-12-03", false, "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1200&q=80"),
-            new("Audi", "A3 Sportback TFSI", "Auto", "LN905CF", 40320, 2, "Benzina", "Disponibile", "FONDAZIONE SETTORE-1", "2023-11-08", "2024-11-16", "2024-11-30", "2024-12-04", "2024-11-08", false, "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80"),
-            new("Suzuki", "Vitara Hybrid", "Auto", "CL200XT", 26590, 2, "Ibrido", "Disponibile", "FONDAZIONE SETTORE-3", "2024-09-09", "2024-09-18", "2024-09-30", "2024-10-07", "2024-09-09", false, "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1200&q=80")
+            new("Fiat", "Panda 1.0 Hybrid", "Auto", "HB731RK", 28640, 2, "Benzina", "InUso", 1, "2024-01-15", "2024-02-10", "2024-01-20", "2024-03-05", "2024-01-15", true, "https://www.marchiauto.it/files/21028092_O_667d22dbdbe18.jpg"),
+            new("Toyota", "Yaris Hybrid", "Auto", "FX210ML", 51720, 1, "Ibrido", "Disponibile", 1, "2023-05-08", "2024-05-15", "2024-05-31", "2024-06-20", "2024-05-08", true, "https://spazio4to.spaziogroup.com/files/2022/07/toyota-yaris-gr-hybrid-768x400-1.jpg"),
+            new("Volkswagen", "Golf 2.0 TDI", "Auto", "GT904PN", 93110, 1, "Diesel", "Manutenzione", 2, "2022-01-19", "2024-12-20", "2024-12-31", "2024-08-22", "2024-12-19", true, "https://cdn-datak.motork.net/configurator-cover/cars/it/1600/VOLKSWAGEN/GOLF/43893_BERLINA-5-PORTE/volkswagen-golf-cover.jpg"),
+            new("Fiat", "500e Icon", "Auto", "EV552TS", 18800, 2, "Elettrico", "InUso", 3, "2025-02-03", "2025-02-28", "2025-02-28", "2025-02-15", "2025-02-03", true, "https://rcs.cdn.publieditor.it/w640/M1458_02.jpg"),
+            new("Renault", "Clio dCi", "Auto", "ZA118KL", 67400, 1, "Diesel", "Disponibile", 2, "2021-09-30", "2024-09-30", "2024-10-12", "2024-11-01", "2024-09-30", true, "https://www.njuskalo.hr/image-xlsize/auti/renault-clio-1.5-dci-slika-174396398.jpg"),
+            new("Ford", "Transit Custom", "Furgone", "VF620AR", 121300, 0, "Diesel", "InUso", 2, "2020-06-11", "2024-06-11", "2024-06-30", "2024-07-10", "2024-06-11", true, "https://d2e5b8shawuel2.cloudfront.net/vehicle/299427/hrv/original.jpg"),
+            new("Peugeot", "208 BlueHDi", "Auto", "LM406XC", 44280, 2, "Diesel", "RichiestaManu", 1, "2023-03-21", "2024-03-25", "2024-03-31", "2024-04-18", "2024-03-21", true, "https://immagini.alvolante.it/sites/default/files/styles/image_gallery_big/public/prova_lettori_anteprima/2018/08/peugeot_1024x768.jpg"),
+            new("Jeep", "Renegade 4xe", "Auto", "QW771ED", 35600, 2, "Ibrido Plug-in", "InUso", 3, "2024-04-09", "2024-04-30", "2024-04-30", "2024-05-16", "2024-04-09", true, "https://rcs.cdn.publieditor.it/w640/M1025_04.jpg"),
+            new("Citroen", "C3 Aircross", "Auto", "NB284PL", 26450, 1, "Benzina", "Disponibile", 1, "2024-07-14", "2024-07-20", "2024-07-31", "2024-08-25", "2024-07-14", true, "https://www.newsauto.it/wp-content/uploads/2021/02/Nuovo-Citroen-C3-Aircross-1.jpg"),
+            new("Mercedes", "Vito Tourer", "Furgone", "TR992CF", 84550, 1, "Diesel", "InUso", 2, "2021-11-18", "2024-11-18", "2024-11-30", "2024-12-02", "2024-11-18", true, "https://mezzicommerciali.it/wp-content/uploads/bfi_thumb/Mercedes%20Vito%20Tourer-ouv933l1r2z5vi201atbihbrvoh8y25otj3z4a9feg.jpg"),
+            new("Opel", "Corsa Edition", "Auto", "MK330SV", 30870, 2, "Benzina", "Disponibile", 3, "2024-10-02", "2024-10-08", "2024-10-31", "2024-11-14", "2024-10-02", true, "https://cdn.brandini.it/cover-prod/upload-6707a72e6ff132.55885846.jpg"),
+            new("Nissan", "Qashqai e-Power", "Auto", "AS513DL", 22510, 2, "Ibrido", "InUso", 1, "2025-01-17", "2025-01-20", "2025-01-31", "2025-02-06", "2025-01-17", true, "https://storage.googleapis.com/fp-media/1/2024/03/NISSAN.jpg"),
+            new("Hyundai", "i20 ConnectLine", "Auto", "PL208FT", 31840, 1, "Benzina", "Disponibile", 3, "2024-03-12", "2024-03-20", "2024-03-31", "2024-04-10", "2024-03-12", true, "https://immagini.alvolante.it/sites/default/files/styles/image_gallery_big/public/news_galleria/2020/09/hyundai-i20-n-line-2021_6.jpg"),
+            new("Kia", "Sportage HEV", "Auto", "DS641VM", 27110, 2, "Ibrido", "InUso", 1, "2024-06-03", "2024-06-12", "2024-06-30", "2024-07-09", "2024-06-03", true, "https://immagini.alvolante.it/sites/default/files/styles/anteprima_970/public/prova_galleria/2023/01/kia-sportage-16-t-gdi-hev-prova-2022-03_09_resize.jpg"),
+            new("Peugeot", "Partner BlueHDi", "Furgone", "FR520NB", 76420, 1, "Diesel", "Disponibile", 2, "2022-09-07", "2024-09-10", "2024-09-30", "2024-10-01", "2024-09-07", true, "https://cdn.dealerk.it/dealer/datafiles/vehicle/images/$original$/2431/k0h0a8ljpehXxmHP.jpeg"),
+            new("Renault", "Kangoo Van", "Furgone", "AA551FE", 110240, 0, "Diesel", "Manutenzione", 2, "2020-12-03", "2024-12-12", "2024-12-31", "2025-01-09", "2024-12-03", false, "https://immagini.alvolante.it/sites/default/files/styles/image_gallery_big/public/news_galleria/2022/06/renault-kangoo-e-tech-electric-2022-06.jpg"),
+            new("Audi", "A3 Sportback TFSI", "Auto", "LN905CF", 40320, 2, "Benzina", "Disponibile", 1, "2023-11-08", "2024-11-16", "2024-11-30", "2024-12-04", "2024-11-08", false, "https://cdn-xy.drivek.com/eyJidWNrZXQiOiJkYXRhay1jZG4teHkiLCJrZXkiOiJjb25maWd1cmF0b3ItY292ZXIvY2Fycy9pdC9vcmlnaW5hbC9BVURJL0EzLVNQT1JUQkFDSy80NDEzNF9IQVRDSEJBQ0stNS1ET09SUy9hdWRpLWEzLXNwb3J0YmFjay1jb3Zlci5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjEwMjQsImhlaWdodCI6bnVsbCwiZml0IjoiY292ZXIifX19"),
+            new("Suzuki", "Vitara Hybrid", "Auto", "CL200XT", 26590, 2, "Ibrido", "Disponibile", 3, "2024-09-09", "2024-09-18", "2024-09-30", "2024-10-07", "2024-09-09", false, "https://bonaventuramotors.it/wp-content/uploads/2021/12/31916FF2-F493-442D-9653-84330BC7D204-scaled.jpeg")
         };
 
         var veicoli = new List<Veicolo>();
@@ -149,7 +149,7 @@ public static class DemoDataSeeder
             int livelloCarburante,
             string tipoCarburante,
             string stato,
-            string gruppo,
+            int gruppo,
             string dataPossesso,
             string revisioneInizio,
             string bolloInizio,
@@ -184,7 +184,7 @@ public static class DemoDataSeeder
         public int LivelloCarburante { get; }
         public string TipoCarburante { get; }
         public string Stato { get; }
-        public string Gruppo { get; }
+        public int Gruppo { get; }
         public string DataPossesso { get; }
         public string RevisioneInizio { get; }
         public string BolloInizio { get; }

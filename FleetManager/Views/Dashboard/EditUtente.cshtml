@@ -1,0 +1,70 @@
+@model FleetManager.Models.ViewModels.FormUtenteViewModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Nuovo Utente";
+}
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fondazione Simonini | Nuovo Utente</title>
+    <link rel="stylesheet" href="~/css/fleet.css" asp-append-version="true" />
+</head>
+<body>
+    <div id="appShell">
+        <header>
+            <div class="header-logo-container">
+                <img src="https://www.fondazionesimonini.it/imgs/logo.png" alt="Fondazione Simonini" style="height: 52px;">
+                <div class="header-user">Nuovo utente</div>
+            </div>
+            <div class="header-title-center">UTENTE</div>
+            <div class="header-buttons">
+                <a class="header-link-button" asp-controller="Dashboard" asp-action="Index">Torna alla dashboard</a>
+                <a class="header-link-button" asp-controller="Account" asp-action="Logout">Logout</a>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="edit-shell">
+                <section class="edit-panel">
+                    <h1>Nuovo utente</h1>
+                    <p class="edit-subtitle">L'admin inserisce i dati principali e salva.</p>
+
+                    <form asp-action="SalvaUtente" method="post" class="edit-form">
+                        <div asp-validation-summary="ModelOnly" class="validation-box"></div>
+
+                        <div class="form-grid">
+                            <div class="modal-field">
+                                <label asp-for="Nome">Nome</label>
+                                <input asp-for="Nome" />
+                            </div>
+                            <div class="modal-field">
+                                <label asp-for="Cognome">Cognome</label>
+                                <input asp-for="Cognome" />
+                            </div>
+                            <div class="modal-field">
+                                <label asp-for="Email">Email</label>
+                                <input asp-for="Email" />
+                            </div>
+                            <div class="modal-field">
+                                <label asp-for="Password">Password</label>
+                                <input asp-for="Password" />
+                            </div>
+                            <div class="modal-field">
+                                <label asp-for="DataNascita">Data di nascita</label>
+                                <input asp-for="DataNascita" type="date" />
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <a class="btn-cancel link-button" asp-controller="Dashboard" asp-action="Index">Annulla</a>
+                            <button class="btn-save" type="submit">Salva utente</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

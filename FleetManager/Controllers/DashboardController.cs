@@ -10,7 +10,9 @@ namespace FleetManager.Controllers
     [Authorize]
     public class DashboardController : Controller
     {
-        // I gruppi sono pochi e fissi, quindi li teniamo come costanti semplici.
+        private const int IndiceGruppo1 = 1;
+        private const int IndiceGruppo2 = 2;
+        private const int IndiceGruppo3 = 3;
         private const string Gruppo1 = "FONDAZIONE SETTORE-1";
         private const string Gruppo2 = "FONDAZIONE SETTORE-2";
         private const string Gruppo3 = "FONDAZIONE SETTORE-3";
@@ -51,6 +53,7 @@ namespace FleetManager.Controllers
                 .ThenBy(veicolo => veicolo.Marca)
                 .ThenBy(veicolo => veicolo.Modello)
                 .ToListAsync();
+
 
             var model = new DashboardPaginaViewModel
             {
@@ -101,6 +104,13 @@ namespace FleetManager.Controllers
             return View("Edit", model);
         }
 
+        [Authorize(Roles = "admin")]
+        [HttpGet]
+        public IActionResult CreaUtente()
+        {
+            return View("EditUtente", new FormUtenteViewModel());
+        }
+
         [HttpGet]
         public async Task<IActionResult> Modifica(int id)
         {
@@ -134,7 +144,7 @@ namespace FleetManager.Controllers
                 Modello = CostruisciNomeModello(veicolo),
                 Targa = veicolo.Targa,
                 IdAssegnatario = veicolo.UtentePrenotatoID,
-                Gruppo = NormalizzaGruppo(veicolo.Gruppo, veicolo.Tipo),
+                Gruppo = SistemaGruppo(veicolo.Gruppo, veicolo.Tipo),
                 Chilometraggio = veicolo.Chilometraggio,
                 LivelloCarburante = SistemaLivelloCarburante(veicolo.LivelloCarburante),
                 TipoCarburante = veicolo.Carburante,
@@ -148,6 +158,50 @@ namespace FleetManager.Controllers
             });
 
             return View("Edit", model);
+        }
+
+        [Authorize(Roles = "admin")]
+        [HttpPost]
+        public async Task<IActionResult> SalvaUtente(FormUtenteViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("EditUtente", model);
+                
+            }
+
+            var emailPulita = model.Email.Trim().ToLowerInvariant();
+            var utenteEsistente = await _context.Utenti.FirstOrDefaultAsync(item => item.Email == emailPulita);
+            if (utenteEsistente != null)
+            {
+                ModelState.AddModelError(string.Empty, "Esiste gia un utente con questa email.");
+                return View("EditUtente", model);
+            }
+
+            if (model.DataNascita == null)
+            {
+                ModelState.AddModelError(string.Empty, "Inserisci una data di nascita idiota");    
+                return View("EditUtente", model);
+
+            }
+
+
+            var utente = new Utente
+            {
+                Nome = model.Nome.Trim(),
+                Cognome = model.Cognome.Trim(),
+                Email = emailPulita,
+                Password = model.Password.Trim(),
+                DataNascita = model.DataNascita ?? DateTime.Today,
+                Ruolo = "Driver",
+                DataRegistrazione = DateTime.Now
+            };
+
+            _context.Utenti.Add(utente);
+            await _context.SaveChangesAsync();
+
+            TempData["StatusMessage"] = "Utente creato correttamente.";
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
@@ -382,9 +436,9 @@ namespace FleetManager.Controllers
 
             model.OpzioniGruppo = new List<OpzioneSelectViewModel>
             {
-                new() { Valore = Gruppo1, Testo = Gruppo1 },
-                new() { Valore = Gruppo2, Testo = Gruppo2 },
-                new() { Valore = Gruppo3, Testo = Gruppo3 }
+                new() { Valore = IndiceGruppo1.ToString(), Testo = Gruppo1 },
+                new() { Valore = IndiceGruppo2.ToString(), Testo = Gruppo2 },
+                new() { Valore = IndiceGruppo3.ToString(), Testo = Gruppo3 }
             };
 
             model.OpzioniCarburante = new List<OpzioneSelectViewModel>
@@ -431,7 +485,7 @@ namespace FleetManager.Controllers
                 Modello = CostruisciNomeModello(veicolo),
                 Targa = veicolo.Targa,
                 Stato = stato,
-                Gruppo = NormalizzaGruppo(veicolo.Gruppo, veicolo.Tipo),
+                Gruppo = NomeGruppo(SistemaGruppo(veicolo.Gruppo, veicolo.Tipo)),
                 NomeAssegnatario = veicolo.UtentePrenotato?.NomeCompleto,
                 Chilometraggio = veicolo.Chilometraggio,
                 LivelloCarburante = SistemaLivelloCarburante(veicolo.LivelloCarburante),
@@ -459,6 +513,7 @@ namespace FleetManager.Controllers
             var nomeAssegnatario = PortaInMinuscolo(veicolo.UtentePrenotato?.NomeCompleto);
             var stato = StatoPerVista(veicolo.Stato);
             var livelloCarburante = SistemaLivelloCarburante(veicolo.LivelloCarburante);
+            var gruppo = SistemaGruppo(veicolo.Gruppo, veicolo.Tipo);
 
             if (!string.IsNullOrWhiteSpace(filtri.Ricerca))
             {
@@ -468,7 +523,7 @@ namespace FleetManager.Controllers
                     nomeModello,
                     PortaInMinuscolo(veicolo.Targa),
                     nomeAssegnatario,
-                    PortaInMinuscolo(NormalizzaGruppo(veicolo.Gruppo, veicolo.Tipo)),
+                    PortaInMinuscolo(NomeGruppo(gruppo)),
                     PortaInMinuscolo(stato),
                     PortaInMinuscolo(veicolo.Carburante),
                     PortaInMinuscolo(EtichettaCarburante(livelloCarburante))
@@ -481,7 +536,7 @@ namespace FleetManager.Controllers
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(filtri.Gruppo) && NormalizzaGruppo(veicolo.Gruppo, veicolo.Tipo) != filtri.Gruppo)
+            if (filtri.Gruppo.HasValue && gruppo != filtri.Gruppo.Value)
             {
                 return false;
             }
@@ -534,7 +589,7 @@ namespace FleetManager.Controllers
             if (eAdmin)
             {
                 veicolo.UtentePrenotatoID = model.IdAssegnatario;
-                veicolo.Gruppo = NormalizzaGruppo(model.Gruppo, veicolo.Tipo);
+                veicolo.Gruppo = SistemaGruppo(model.Gruppo, veicolo.Tipo);
                 veicolo.Stato = StatoPerDatabase(model.Stato);
             }
         }
@@ -596,25 +651,37 @@ namespace FleetManager.Controllers
             return veicolo.Marca + " " + veicolo.Modello;
         }
 
-        private static string NormalizzaGruppo(string? gruppo, string? tipo)
+        private static int SistemaGruppo(int gruppo, string? tipo)
         {
-            var valorePulito = string.Empty;
-            if (!string.IsNullOrWhiteSpace(gruppo))
+            if (gruppo == IndiceGruppo1 || gruppo == IndiceGruppo2 || gruppo == IndiceGruppo3)
             {
-                valorePulito = gruppo.Trim().ToUpperInvariant();
-            }
-
-            if (valorePulito == Gruppo1 || valorePulito == Gruppo2 || valorePulito == Gruppo3)
-            {
-                return valorePulito;
+                return gruppo;
             }
 
             if (string.Equals(tipo, "Furgone", StringComparison.OrdinalIgnoreCase))
             {
-                return Gruppo2;
+                return IndiceGruppo2;
             }
 
-            return Gruppo1;
+            return IndiceGruppo1;
+        }
+
+        private static string NomeGruppo(int gruppo)
+        {
+            var nomeGruppo = Gruppo1;
+
+            switch (gruppo)
+            {
+                case IndiceGruppo2:
+                    nomeGruppo = Gruppo2;
+                    break;
+
+                case IndiceGruppo3:
+                    nomeGruppo = Gruppo3;
+                    break;
+            }
+
+            return nomeGruppo;
         }
 
         private static string StatoPerVista(string? statoDatabase)
