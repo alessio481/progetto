@@ -5,17 +5,16 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Usiamo MVC classico: controller C# + view Razor.
 builder.Services.AddControllersWithViews();
 
-// Il progetto usa SQL Server / LocalDB.
+//LocalDB.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     options.UseSqlServer(connectionString);
 });
 
-// Login semplice con cookie di autenticazione.
+// Login con cookie
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -26,11 +25,11 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 var app = builder.Build();
 
-// All'avvio prepariamo il database demo.
+// Questo fa in modo di caricare i dati nel db se non sono presenti
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
+    // I dati base sono hardcoded in questo script
     await DemoDataSeeder.PreparaDatabaseDemoAsync(db);
 }
 

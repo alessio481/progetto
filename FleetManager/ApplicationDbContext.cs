@@ -9,7 +9,7 @@ namespace FleetManager.Models
         {
         }
 
-        // Queste sono le uniche tabelle usate davvero dalla demo.
+        // Queste sono le uniche tabelle usate davvero
         public DbSet<Utente> Utenti { get; set; }
         public DbSet<Veicolo> Veicoli { get; set; }
     }

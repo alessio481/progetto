@@ -28,10 +28,9 @@ namespace FleetManager.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(FiltriDashboardViewModel filtri)
         {
-            // Flusso principale della demo:
-            // 1. leggiamo l'utente loggato
-            // 2. prendiamo i veicoli dal database
-            // 3. prepariamo le schede da mostrare nella view
+            // 1 leggiamo l'utente loggato
+            // 2 prendiamo i veicoli dal database
+            // 3 prepariamo le schede da mostrare nella view
             var idUtenteCorrente = OttieniIdUtenteCorrente();
             if (idUtenteCorrente == null)
             {
@@ -180,7 +179,7 @@ namespace FleetManager.Controllers
 
             if (model.DataNascita == null)
             {
-                ModelState.AddModelError(string.Empty, "Inserisci una data di nascita idiota");    
+                ModelState.AddModelError(string.Empty, "Inserisci una data di nascita!!!");    
                 return View("EditUtente", model);
 
             }
