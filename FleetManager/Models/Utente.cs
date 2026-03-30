@@ -35,6 +35,12 @@ namespace FleetManager.Models
         [Display(Name = "Data Registrazione")]
         public DateTime DataRegistrazione { get; set; } = DateTime.Now;
 
+        // Tempo totale di guida accumulato, espresso in secondi.
+        public long TempoGuidaSecondi { get; set; }
+
+        // Quando l'utente inizia a guidare salviamo l'istante corrente in formato unix.
+        public long? InizioGuidaUnix { get; set; }
+
         // Evitiamo di scrivere Nome + Cognome ogni volta nelle view.
         [Display(Name = "Nome Completo")]
         public string NomeCompleto

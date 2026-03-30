@@ -9,6 +9,8 @@ namespace FleetManager.Models.ViewModels
         public string NomeUtenteCorrente { get; set; } = string.Empty;
         public string? MessaggioOperazione { get; set; }
         public string? MessaggioErrore { get; set; }
+        public long TempoGuidaSecondi { get; set; }
+        public long? InizioGuidaUnix { get; set; }
         public FiltriDashboardViewModel FiltriRicerca { get; set; } = new();
         public List<SchedaVeicoloViewModel> SchedeVeicoli { get; set; } = new();
 
@@ -120,10 +122,13 @@ namespace FleetManager.Models.ViewModels
         public DateTime? TagliandoScadenza { get; set; }
         public DateTime? AssicurazioneInizio { get; set; }
         public DateTime? AssicurazioneScadenza { get; set; }
+        public bool MostraTimerGuida { get; set; }
+        public long? InizioGuidaUnix { get; set; }
         public bool PuoModificare { get; set; }
         public bool PuoUsareOra { get; set; }
         public bool PuoSegnalareManutenzione { get; set; }
         public bool PuoApprovareManutenzione { get; set; }
+        public bool PuoTerminareManutenzione { get; set; }
     }
 
     public class FormVeicoloViewModel
@@ -184,11 +189,27 @@ namespace FleetManager.Models.ViewModels
         public string Email { get; set; } = string.Empty;
 
         [Required]
+        [MinLength(5)]
         
         public string Password { get; set; } = string.Empty;
 
         [DataType(DataType.Date)]
         [Required]
         public DateTime? DataNascita { get; set; }
+    }
+
+    public class TempiGuidaUtentiViewModel
+    {
+        public string NomeAdmin { get; set; } = string.Empty;
+        public List<RigaTempoGuidaUtenteViewModel> Utenti { get; set; } = new();
+    }
+
+    public class RigaTempoGuidaUtenteViewModel
+    {
+        public string Nome { get; set; } = string.Empty;
+        public string Cognome { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public long TempoGuidaSecondi { get; set; }
+        public long? InizioGuidaUnix { get; set; }
     }
 }

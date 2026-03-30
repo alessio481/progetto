@@ -1,0 +1,118 @@
+@model FleetManager.Models.ViewModels.TempiGuidaUtentiViewModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Tempi Guida";
+}
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fondazione Simonini | Tempi Guida</title>
+    <link rel="stylesheet" href="~/css/fleet.css" asp-append-version="true" />
+</head>
+<body>
+    <div id="appShell">
+        <header>
+            <div class="header-logo-container">
+                <img src="https://www.fondazionesimonini.it/imgs/logo.png" alt="Fondazione Simonini" style="height: 62px;">
+                <div class="header-user">@Model.NomeAdmin | Admin</div>
+            </div>
+            <div class="header-title-center">TEMPI GUIDA</div>
+            <div class="header-buttons">
+                <a class="header-link-button" asp-controller="Dashboard" asp-action="Index">Torna alla dashboard</a>
+                <a class="header-link-button" asp-controller="Account" asp-action="Logout">Logout</a>
+            </div>
+        </header>
+
+        <div class="container">
+            <section class="users-time-panel">
+                <h1>Tempi guida utenti</h1>
+                <p class="edit-subtitle">Pagina semplice per vedere i tempi accumulati e copiare l'email.</p>
+
+                <div class="users-time-list">
+                    @foreach (var utente in Model.Utenti)
+                    {
+                        <div class="user-time-row">
+                            <div class="user-time-main">
+                                <strong>@utente.Nome @utente.Cognome</strong>
+                                <span>@utente.Email</span>
+                            </div>
+                            <div class="user-time-total">
+                                <span>Tempo guida</span>
+                                <strong class="js-drive-time" data-base-seconds="@utente.TempoGuidaSecondi" data-start-unix="@utente.InizioGuidaUnix">@FormattaSecondi(utente.TempoGuidaSecondi)</strong>
+                            </div>
+                            <button type="button" class="copy-email-button js-copy-email" data-email="@utente.Email">@@</button>
+                        </div>
+                    }
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        function formattaSecondi(secondiTotali) {
+            const ore = Math.floor(secondiTotali / 3600);
+            const minuti = Math.floor((secondiTotali % 3600) / 60);
+            const secondi = secondiTotali % 60;
+
+            return String(ore).padStart(2, "0") + ":" +
+                String(minuti).padStart(2, "0") + ":" +
+                String(secondi).padStart(2, "0");
+        }
+
+        function aggiornaTempiGuida() {
+            const unixAdesso = Math.floor(Date.now() / 1000);
+            const elementi = document.querySelectorAll(".js-drive-time");
+
+            for (const elemento of elementi) {
+                const baseSeconds = Number(elemento.dataset.baseSeconds || "0");
+                const startUnix = Number(elemento.dataset.startUnix || "0");
+                let secondiTotali = baseSeconds;
+
+                if (startUnix > 0) {
+                    secondiTotali += Math.max(0, unixAdesso - startUnix);
+                }
+
+                elemento.textContent = formattaSecondi(secondiTotali);
+            }
+        }
+
+        function collegaCopiaEmail() {
+            const bottoni = document.querySelectorAll(".js-copy-email");
+
+            for (const bottone of bottoni) {
+                bottone.addEventListener("click", async function () {
+                    const email = bottone.dataset.email || "";
+
+                    try {
+                        await navigator.clipboard.writeText(email);
+                        const testoOriginale = bottone.textContent;
+                        bottone.textContent = "OK";
+                        window.setTimeout(function () {
+                            bottone.textContent = testoOriginale;
+                        }, 1000);
+                    } catch {
+                        alert(email);
+                    }
+                });
+            }
+        }
+
+        aggiornaTempiGuida();
+        collegaCopiaEmail();
+        window.setInterval(aggiornaTempiGuida, 1000);
+    </script>
+</body>
+</html>
+
+@functions {
+    private string FormattaSecondi(long secondiTotali)
+    {
+        var ore = secondiTotali / 3600;
+        var minuti = (secondiTotali % 3600) / 60;
+        var secondi = secondiTotali % 60;
+
+        return ore.ToString("00") + ":" + minuti.ToString("00") + ":" + secondi.ToString("00");
+    }
+}

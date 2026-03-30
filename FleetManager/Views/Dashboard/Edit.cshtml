@@ -24,7 +24,7 @@
     <div id="appShell">
         <header>
             <div class="header-logo-container">
-                <img src="https://www.fondazionesimonini.it/imgs/logo.png" alt="Fondazione Simonini" style="height: 52px;">
+                <img src="https://www.fondazionesimonini.it/imgs/logo.png" alt="Fondazione Simonini" style="height: 62px;">
                 <div class="header-user">@ViewData["Title"]</div>
             </div>
             <div class="header-title-center">VEICOLO</div>
@@ -51,11 +51,25 @@
                         <div class="form-grid">
                             <div class="modal-field">
                                 <label asp-for="Modello">Modello</label>
-                                <input asp-for="Modello" />
+                                @if (Model.EAdmin)
+                                {
+                                    <input asp-for="Modello" />
+                                }
+                                else
+                                {
+                                    <input asp-for="Modello" readonly />
+                                }
                             </div>
                             <div class="modal-field">
                                 <label asp-for="Targa">Targa</label>
-                                <input asp-for="Targa" />
+                                @if (Model.EAdmin)
+                                {
+                                    <input asp-for="Targa" />
+                                }
+                                else
+                                {
+                                    <input asp-for="Targa" readonly />
+                                }
                             </div>
 
                             @if (Model.EAdmin)
@@ -96,7 +110,14 @@
                             </div>
                             <div class="modal-field">
                                 <label asp-for="TipoCarburante">Tipo carburante</label>
-                                <input asp-for="TipoCarburante" />
+                                @if (Model.EAdmin)
+                                {
+                                    <input asp-for="TipoCarburante" />
+                                }
+                                else
+                                {
+                                    <input asp-for="TipoCarburante" readonly />
+                                }
                             </div>
 
                             @if (Model.EAdmin)
@@ -114,12 +135,22 @@
 
                             <div class="modal-field">
                                 <label asp-for="DataPossesso">Data possesso</label>
-                                <input asp-for="DataPossesso" type="date" />
+                                @if (Model.EAdmin)
+                                {
+                                    <input asp-for="DataPossesso" type="date" />
+                                }
+                                else
+                                {
+                                    <input asp-for="DataPossesso" type="date" readonly />
+                                }
                             </div>
-                            <div class="modal-field">
-                                <label asp-for="LinkImmagine">URL foto</label>
-                                <input asp-for="LinkImmagine" />
-                            </div>
+                            @if (Model.EAdmin)
+                            {
+                                <div class="modal-field">
+                                    <label asp-for="LinkImmagine">URL foto</label>
+                                    <input asp-for="LinkImmagine" />
+                                </div>
+                            }
                         </div>
 
                         <section class="events-section static-section">

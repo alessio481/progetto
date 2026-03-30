@@ -2,6 +2,8 @@
 @{
     Layout = null;
     ViewData["Title"] = "Dashboard";
+    var messaggioOperazioneJson = System.Text.Json.JsonSerializer.Serialize(Model.MessaggioOperazione);
+    var messaggioErroreJson = System.Text.Json.JsonSerializer.Serialize(Model.MessaggioErrore);
 }
 <!DOCTYPE html>
 <html lang="it">
@@ -15,16 +17,28 @@
     <div id="appShell">
         <header>
             <div class="header-logo-container">
-                <img src="https://www.fondazionesimonini.it/imgs/logo.png" alt="Fondazione Simonini" style="height: 52px;">
-                <div class="header-user">@Model.NomeUtenteCorrente | @EtichettaRuolo(Model.EAdmin)</div>
+                <img src="https://www.fondazionesimonini.it/imgs/logo.png" alt="Fondazione Simonini" style="height: 62px;">
+                <div>
+                    <div class="header-user">@Model.NomeUtenteCorrente | @EtichettaRuolo(Model.EAdmin)</div>
+                    @if (!Model.EAdmin)
+                    {
+                        <div class="header-drive-pill">
+                            <span>Totale guida</span>
+                            <strong>@FormattaSecondi(Model.TempoGuidaSecondi)</strong>
+                        </div>
+                    }
+                </div>
             </div>
             <div class="header-title-center">DASHBOARD</div>
             <div class="header-buttons">
                 @if (Model.EAdmin)
                 {
                     <details class="debug-menu">
-                        <summary>Debug</summary>
+                        <summary>Admin</summary>
                         <div class="debug-dropdown server-dropdown">
+                            <a asp-action="TempiGuidaUtenti">Tempi guida</a>
+                            <a asp-action="CreaUtente">Aggiungi utente</a>
+                            <a asp-action="Crea">Aggiungi auto</a>
                             <form asp-action="RipristinaDemo" method="post">
                                 <button type="submit">Ripristina Demo</button>
                             </form>
@@ -33,24 +47,12 @@
                             </form>
                         </div>
                     </details>
-                    <a class="header-link-button" asp-action="CreaUtente">Aggiungi Utente</a>
-                    <a class="header-link-button" asp-action="Crea">Aggiungi Auto</a>
                 }
                 <a class="header-link-button" asp-controller="Account" asp-action="Logout">Logout</a>
             </div>
         </header>
 
         <div class="container">
-            @if (!string.IsNullOrWhiteSpace(Model.MessaggioOperazione))
-            {
-                <div class="status-box" style="display:block;">@Model.MessaggioOperazione</div>
-            }
-
-            @if (!string.IsNullOrWhiteSpace(Model.MessaggioErrore))
-            {
-                <div class="status-box" data-tone="error" style="display:block;">@Model.MessaggioErrore</div>
-            }
-
             <div class="toolbar-note">
                 <strong>@Model.TotaleVeicoli @TestoVeicoli(Model.TotaleVeicoli)</strong>
             </div>
@@ -125,7 +127,17 @@
                                 <div class="car-image" style="background-image:url('@veicolo.LinkImmagine')"></div>
                                 <div class="car-info">
                                     <div class="car-model">@veicolo.Modello</div>
-                                    <div class="car-brand status-@ClasseCss(veicolo.Stato)">@veicolo.Stato</div>
+                                    <div class="car-status-row">
+                                        <div class="car-brand status-@ClasseCss(veicolo.Stato)">@veicolo.Stato</div>
+                                        @if (veicolo.MostraTimerGuida)
+                                        {
+                                            <strong class="status-live-time js-drive-time"
+                                                    data-base-seconds="0"
+                                                    data-start-unix="@veicolo.InizioGuidaUnix">
+                                                00:00:00
+                                            </strong>
+                                        }
+                                    </div>
                                     <div class="car-targa">Targa: @veicolo.Targa</div>
                                     <div class="car-detail"><span>Assegnatario:</span><strong>@NomeAssegnatario(veicolo.NomeAssegnatario)</strong></div>
                                     <div class="car-detail"><span>KM:</span><strong>@veicolo.Chilometraggio.ToString("N0", new System.Globalization.CultureInfo("it-IT"))</strong></div>
@@ -168,6 +180,14 @@
                                             </form>
                                         }
 
+                                        @if (veicolo.PuoTerminareManutenzione)
+                                        {
+                                            <form asp-action="TerminaManutenzione" method="post" class="inline-form">
+                                                <input type="hidden" name="id" value="@veicolo.IdVeicolo" />
+                                                <button type="submit" class="btn-secondary-action">Termina manutenzione</button>
+                                            </form>
+                                        }
+
                                         <a class="btn-edit btn-@ClasseCss(veicolo.Gruppo)"
                                            asp-action="Modifica"
                                            asp-route-id="@veicolo.IdVeicolo">
@@ -182,6 +202,62 @@
             }
         </div>
     </div>
+    <script>
+        const chiaveScrollDashboard = "dashboard-scroll";
+        const messaggioOperazione = @Html.Raw(messaggioOperazioneJson);
+        const messaggioErrore = @Html.Raw(messaggioErroreJson);
+
+        function formattaSecondi(secondiTotali) {
+            const ore = Math.floor(secondiTotali / 3600);
+            const minuti = Math.floor((secondiTotali % 3600) / 60);
+            const secondi = secondiTotali % 60;
+
+            return String(ore).padStart(2, "0") + ":" +
+                String(minuti).padStart(2, "0") + ":" +
+                String(secondi).padStart(2, "0");
+        }
+
+        function aggiornaTempiGuida() {
+            const unixAdesso = Math.floor(Date.now() / 1000);
+            const elementi = document.querySelectorAll(".js-drive-time");
+
+            for (const elemento of elementi) {
+                const baseSeconds = Number(elemento.dataset.baseSeconds || "0");
+                const startUnix = Number(elemento.dataset.startUnix || "0");
+                let secondiTotali = baseSeconds;
+
+                if (startUnix > 0) {
+                    secondiTotali += Math.max(0, unixAdesso - startUnix);
+                }
+
+                elemento.textContent = formattaSecondi(secondiTotali);
+            }
+        }
+
+        const scrollSalvato = sessionStorage.getItem(chiaveScrollDashboard);
+        if (scrollSalvato) {
+            window.scrollTo(0, Number(scrollSalvato));
+        }
+
+        window.addEventListener("scroll", function () {
+            sessionStorage.setItem(chiaveScrollDashboard, String(window.scrollY));
+        });
+
+        aggiornaTempiGuida();
+        window.setInterval(aggiornaTempiGuida, 1000);
+
+        // L'alert parte alla fine, quando la pagina e' gia' pronta.
+        if (messaggioErrore) {
+            window.setTimeout(function () {
+                window.alert(messaggioErrore);
+            }, 0);
+        } else if (messaggioOperazione) {
+            window.setTimeout(function () {
+                window.alert(messaggioOperazione);
+            }, 0);
+        }
+
+    </script>
 </body>
 </html>
 
@@ -291,5 +367,14 @@
         }
 
         return inizio + " - " + fine;
+    }
+
+    private string FormattaSecondi(long secondiTotali)
+    {
+        var ore = secondiTotali / 3600;
+        var minuti = (secondiTotali % 3600) / 60;
+        var secondi = secondiTotali % 60;
+
+        return ore.ToString("00") + ":" + minuti.ToString("00") + ":" + secondi.ToString("00");
     }
 }

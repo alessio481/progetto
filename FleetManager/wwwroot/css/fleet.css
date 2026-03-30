@@ -48,6 +48,32 @@ header {
     opacity: 0.82;
 }
 
+.header-drive-pill {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 6px 10px;
+    border: 1px solid #4a5b6d;
+    background: #263240;
+}
+
+.header-drive-pill span,
+.header-drive-pill strong {
+    display: block;
+}
+
+.header-drive-pill span {
+    margin-bottom: 3px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #cbd5df;
+}
+
+.header-drive-pill strong {
+    font-size: 14px;
+    color: #ffffff;
+}
+
 .header-title-center {
     flex: 1;
     text-align: center;
@@ -67,7 +93,8 @@ header {
 
 .header-link-button,
 .debug-menu summary,
-.debug-dropdown button {
+.debug-dropdown button,
+.debug-dropdown a {
     display: inline-block;
     border: 1px solid #5a6b7d;
     background: #1f2a35;
@@ -116,6 +143,11 @@ header {
 }
 
 .debug-dropdown button {
+    width: 100%;
+    text-align: left;
+}
+
+.debug-dropdown a {
     width: 100%;
     text-align: left;
 }
@@ -209,6 +241,12 @@ header {
     background: #ffffff;
 }
 
+.modal-field input[readonly] {
+    background: #f1f4f7;
+    color: #6b7280;
+    border-color: #d7dde5;
+}
+
 .search-actions {
     display: flex;
     align-items: end;
@@ -237,6 +275,17 @@ header {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 16px;
     margin-bottom: 24px;
+}
+
+.drive-strip {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.drive-card strong {
+    color: #0073aa;
 }
 
 .summary-card {
@@ -351,6 +400,21 @@ header {
     color: #555555;
 }
 
+.car-status-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.status-live-time {
+    margin-top: 10px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #0073aa;
+    letter-spacing: 0.4px;
+}
+
 .status-in-uso {
     background: #e7f4ea;
     color: #1f7a37;
@@ -416,6 +480,61 @@ header {
     display: flex;
     justify-content: space-between;
     gap: 10px;
+}
+
+.users-time-panel {
+    border: 1px solid #d4dbe3;
+    background: #ffffff;
+    padding: 24px;
+}
+
+.users-time-list {
+    display: grid;
+    gap: 12px;
+}
+
+.user-time-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr auto;
+    gap: 16px;
+    align-items: center;
+    padding: 14px 16px;
+    border: 1px solid #d4dbe3;
+    background: #f9fafb;
+}
+
+.user-time-main strong,
+.user-time-main span,
+.user-time-total span,
+.user-time-total strong {
+    display: block;
+}
+
+.user-time-main strong {
+    margin-bottom: 4px;
+    font-size: 16px;
+}
+
+.user-time-main span,
+.user-time-total span {
+    color: #52606d;
+    font-size: 13px;
+}
+
+.user-time-total strong {
+    margin-top: 4px;
+    font-size: 18px;
+    color: #0073aa;
+}
+
+.copy-email-button {
+    border: 1px solid #5a6b7d;
+    background: #1f2a35;
+    color: #ffffff;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    font-weight: 700;
 }
 
 .card-actions {

@@ -60,6 +60,8 @@ namespace FleetManager.Controllers
                 NomeUtenteCorrente = utenteCorrente.NomeCompleto,
                 MessaggioOperazione = TempData["StatusMessage"]?.ToString(),
                 MessaggioErrore = TempData["ErrorMessage"]?.ToString(),
+                TempoGuidaSecondi = utenteCorrente.TempoGuidaSecondi,
+                InizioGuidaUnix = utenteCorrente.InizioGuidaUnix,
                 FiltriRicerca = filtri
             };
 
@@ -108,6 +110,41 @@ namespace FleetManager.Controllers
         public IActionResult CreaUtente()
         {
             return View("EditUtente", new FormUtenteViewModel());
+        }
+
+        [Authorize(Roles = "admin")]
+        [HttpGet]
+        public async Task<IActionResult> TempiGuidaUtenti()
+        {
+            var utentiDb = await _context.Utenti
+                .OrderBy(utente => utente.Cognome)
+                .ThenBy(utente => utente.Nome)
+                .ToListAsync();
+
+            var model = new TempiGuidaUtentiViewModel
+            {
+                NomeAdmin = User.Identity?.Name ?? "Admin"
+            };
+
+            foreach (var utente in utentiDb)
+            {
+                if (!string.IsNullOrWhiteSpace(utente.Ruolo) &&
+                    utente.Ruolo.Trim().ToLowerInvariant() == "admin")
+                {
+                    continue;
+                }
+
+                model.Utenti.Add(new RigaTempoGuidaUtenteViewModel
+                {
+                    Nome = utente.Nome,
+                    Cognome = utente.Cognome,
+                    Email = utente.Email,
+                    TempoGuidaSecondi = utente.TempoGuidaSecondi,
+                    InizioGuidaUnix = utente.InizioGuidaUnix
+                });
+            }
+
+            return View(model);
         }
 
         [HttpGet]
@@ -166,10 +203,31 @@ namespace FleetManager.Controllers
             if (!ModelState.IsValid)
             {
                 return View("EditUtente", model);
-                
             }
 
+            var nomePulito = model.Nome.Trim();
+            var cognomePulito = model.Cognome.Trim();
             var emailPulita = model.Email.Trim().ToLowerInvariant();
+            var passwordPulita = model.Password.Trim();
+
+            if (nomePulito.Length < 2)
+            {
+                ModelState.AddModelError(string.Empty, "Il nome deve avere almeno 2 caratteri.");
+                return View("EditUtente", model);
+            }
+
+            if (cognomePulito.Length < 2)
+            {
+                ModelState.AddModelError(string.Empty, "Il cognome deve avere almeno 2 caratteri.");
+                return View("EditUtente", model);
+            }
+
+            if (passwordPulita.Length < 5)
+            {
+                ModelState.AddModelError(string.Empty, "La password deve avere almeno 5 caratteri.");
+                return View("EditUtente", model);
+            }
+
             var utenteEsistente = await _context.Utenti.FirstOrDefaultAsync(item => item.Email == emailPulita);
             if (utenteEsistente != null)
             {
@@ -179,25 +237,46 @@ namespace FleetManager.Controllers
 
             if (model.DataNascita == null)
             {
-                ModelState.AddModelError(string.Empty, "Inserisci una data di nascita!!!");    
+                ModelState.AddModelError(string.Empty, "Inserisci una data di nascita.");
                 return View("EditUtente", model);
-
             }
 
+            var dataNascita = model.DataNascita.Value.Date;
+            if (dataNascita > DateTime.Today)
+            {
+                ModelState.AddModelError(string.Empty, "La data di nascita non puo essere nel futuro.");
+                return View("EditUtente", model);
+            }
+
+            if (dataNascita < DateTime.Today.AddYears(-100))
+            {
+                ModelState.AddModelError(string.Empty, "La data di nascita e troppo lontana.");
+                return View("EditUtente", model);
+            }
 
             var utente = new Utente
             {
-                Nome = model.Nome.Trim(),
-                Cognome = model.Cognome.Trim(),
+                Nome = nomePulito,
+                Cognome = cognomePulito,
                 Email = emailPulita,
-                Password = model.Password.Trim(),
-                DataNascita = model.DataNascita ?? DateTime.Today,
+                Password = passwordPulita,
+                DataNascita = dataNascita,
                 Ruolo = "Driver",
-                DataRegistrazione = DateTime.Now
+                DataRegistrazione = DateTime.Now,
+                TempoGuidaSecondi = 0,
+                InizioGuidaUnix = null
             };
 
-            _context.Utenti.Add(utente);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Utenti.Add(utente);
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                ModelState.AddModelError(string.Empty, "Errore durante il salvataggio dell'utente.");
+                return View("EditUtente", model);
+            }
 
             TempData["StatusMessage"] = "Utente creato correttamente.";
             return RedirectToAction(nameof(Index));
@@ -229,6 +308,8 @@ namespace FleetManager.Controllers
 
             // Un solo metodo gestisce sia creazione sia modifica.
             Veicolo veicolo;
+            var statoPrimaDelSalvataggio = "non in uso";
+            int? idAssegnatarioPrimaDelSalvataggio = null;
 
             if (model.IdVeicolo.HasValue)
             {
@@ -240,6 +321,8 @@ namespace FleetManager.Controllers
                 }
 
                 veicolo = veicoloTrovato;
+                statoPrimaDelSalvataggio = StatoPerVista(veicolo.Stato);
+                idAssegnatarioPrimaDelSalvataggio = veicolo.UtentePrenotatoID;
 
                 if (!eAdmin && veicolo.UtentePrenotatoID != idUtenteCorrente.Value)
                 {
@@ -257,6 +340,11 @@ namespace FleetManager.Controllers
             }
 
             CopiaDatiFormSuVeicolo(veicolo, model, eAdmin);
+            await AllineaTempoGuidaDopoCambioStatoAsync(
+                statoPrimaDelSalvataggio,
+                idAssegnatarioPrimaDelSalvataggio,
+                StatoPerVista(veicolo.Stato),
+                veicolo.UtentePrenotatoID);
 
             await _context.SaveChangesAsync();
 
@@ -281,6 +369,12 @@ namespace FleetManager.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            var utente = await _context.Utenti.FirstOrDefaultAsync(item => item.UtenteID == idUtenteCorrente.Value);
+            if (utente == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             var veicolo = await _context.Veicoli.FirstOrDefaultAsync(item => item.VeicoloId == id);
             if (veicolo == null)
             {
@@ -294,19 +388,23 @@ namespace FleetManager.Controllers
             }
 
             var statoAttuale = StatoPerVista(veicolo.Stato);
+
             if (statoAttuale == "in uso")
             {
                 veicolo.Stato = "Disponibile";
+                FermaGuidaUtente(utente);
+                TempData["StatusMessage"] = "Stato veicolo aggiornato e tempo di guida salvato.";
             }
             else
             {
                 veicolo.Stato = "InUso";
+                AvviaGuidaUtente(utente);
+                TempData["StatusMessage"] = "Stato veicolo aggiornato. Guida iniziata.";
             }
 
             veicolo.DataAggiornamento = DateTime.Now;
 
             await _context.SaveChangesAsync();
-            TempData["StatusMessage"] = "Stato veicolo aggiornato.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -336,6 +434,7 @@ namespace FleetManager.Controllers
                 return Forbid();
             }
 
+            await FermaGuidaSeVeicoloEraInUsoAsync(veicolo);
             veicolo.Stato = "RichiestaManu";
             veicolo.DataAggiornamento = DateTime.Now;
             await _context.SaveChangesAsync();
@@ -365,6 +464,25 @@ namespace FleetManager.Controllers
 
         [Authorize(Roles = "admin")]
         [HttpPost]
+        public async Task<IActionResult> TerminaManutenzione(int id)
+        {
+            var veicolo = await _context.Veicoli.FirstOrDefaultAsync(item => item.VeicoloId == id);
+            if (veicolo == null)
+            {
+                TempData["ErrorMessage"] = "Veicolo non trovato.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            veicolo.Stato = "Disponibile";
+            veicolo.DataAggiornamento = DateTime.Now;
+            await _context.SaveChangesAsync();
+
+            TempData["StatusMessage"] = "Manutenzione terminata correttamente.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        [Authorize(Roles = "admin")]
+        [HttpPost]
         public async Task<IActionResult> Elimina(int id)
         {
             var veicolo = await _context.Veicoli.FirstOrDefaultAsync(item => item.VeicoloId == id);
@@ -374,6 +492,7 @@ namespace FleetManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            await FermaGuidaSeVeicoloEraInUsoAsync(veicolo);
             _context.Veicoli.Remove(veicolo);
             await _context.SaveChangesAsync();
 
@@ -466,6 +585,7 @@ namespace FleetManager.Controllers
             var puoUsareOra = false;
             var puoSegnalareManutenzione = false;
             var puoApprovareManutenzione = false;
+            var puoTerminareManutenzione = false;
 
             if (!eAdmin && eAssegnatario && stato != "in manutenzione" && stato != "in richiesta manutenzione")
             {
@@ -476,6 +596,21 @@ namespace FleetManager.Controllers
             if (eAdmin && stato == "in richiesta manutenzione")
             {
                 puoApprovareManutenzione = true;
+            }
+
+            if (eAdmin && stato == "in manutenzione")
+            {
+                puoTerminareManutenzione = true;
+            }
+
+            var mostraTimerGuida = false;
+            long? inizioGuidaUnix = null;
+
+            // Se un'auto e' in uso, mostriamo il timer a chi la sta guardando.
+            if (stato == "in uso" && veicolo.UtentePrenotato?.InizioGuidaUnix.HasValue == true)
+            {
+                mostraTimerGuida = true;
+                inizioGuidaUnix = veicolo.UtentePrenotato.InizioGuidaUnix;
             }
 
             return new SchedaVeicoloViewModel
@@ -499,10 +634,13 @@ namespace FleetManager.Controllers
                 TagliandoScadenza = CalcolaScadenza(veicolo.TagliandoInizio, 1),
                 AssicurazioneInizio = veicolo.AssicurazioneInizio,
                 AssicurazioneScadenza = CalcolaScadenza(veicolo.AssicurazioneInizio, 1),
+                MostraTimerGuida = mostraTimerGuida,
+                InizioGuidaUnix = inizioGuidaUnix,
                 PuoModificare = eAdmin || eAssegnatario,
                 PuoUsareOra = puoUsareOra,
                 PuoSegnalareManutenzione = puoSegnalareManutenzione,
-                PuoApprovareManutenzione = puoApprovareManutenzione
+                PuoApprovareManutenzione = puoApprovareManutenzione,
+                PuoTerminareManutenzione = puoTerminareManutenzione
             };
         }
 
@@ -562,23 +700,19 @@ namespace FleetManager.Controllers
         private void CopiaDatiFormSuVeicolo(Veicolo veicolo, FormVeicoloViewModel model, bool eAdmin)
         {
             // Tutti i campi modificabili passano da qui.
-            string marca;
-            string modello;
-            SeparaMarcaEModello(model.Modello, out marca, out modello);
-
-            veicolo.Marca = marca;
-            veicolo.Modello = modello;
-            veicolo.Targa = model.Targa.Trim().ToUpperInvariant();
-            veicolo.Chilometraggio = Math.Max(model.Chilometraggio, 0);
-            veicolo.LivelloCarburante = SistemaLivelloCarburante(model.LivelloCarburante);
-            veicolo.Carburante = model.TipoCarburante?.Trim();
-            veicolo.DataPossesso = model.DataPossesso;
-            veicolo.ImageUrl = null;
-            if (!string.IsNullOrWhiteSpace(model.LinkImmagine))
+            if (eAdmin)
             {
-                veicolo.ImageUrl = model.LinkImmagine.Trim();
+                string marca;
+                string modello;
+                SeparaMarcaEModello(model.Modello, out marca, out modello);
+
+                veicolo.Marca = marca;
+                veicolo.Modello = modello;
+                veicolo.Targa = model.Targa.Trim().ToUpperInvariant();
             }
 
+            veicolo.Chilometraggio = Math.Max(model.Chilometraggio, 0);
+            veicolo.LivelloCarburante = SistemaLivelloCarburante(model.LivelloCarburante);
             veicolo.RevisioneInizio = model.RevisioneInizio;
             veicolo.BolloInizio = model.BolloInizio;
             veicolo.TagliandoInizio = model.TagliandoInizio;
@@ -587,9 +721,91 @@ namespace FleetManager.Controllers
 
             if (eAdmin)
             {
+                veicolo.Carburante = model.TipoCarburante?.Trim();
+                veicolo.DataPossesso = model.DataPossesso;
+                veicolo.ImageUrl = null;
+                if (!string.IsNullOrWhiteSpace(model.LinkImmagine))
+                {
+                    veicolo.ImageUrl = model.LinkImmagine.Trim();
+                }
+
                 veicolo.UtentePrenotatoID = model.IdAssegnatario;
                 veicolo.Gruppo = SistemaGruppo(model.Gruppo, veicolo.Tipo);
                 veicolo.Stato = StatoPerDatabase(model.Stato);
+            }
+        }
+
+        private async Task AllineaTempoGuidaDopoCambioStatoAsync(
+            string statoPrima,
+            int? idUtentePrima,
+            string statoDopo,
+            int? idUtenteDopo)
+        {
+            var stessaGuida = statoPrima == "in uso" &&
+                              statoDopo == "in uso" &&
+                              idUtentePrima.HasValue &&
+                              idUtentePrima == idUtenteDopo;
+
+            if (stessaGuida)
+            {
+                return;
+            }
+
+            if (statoPrima == "in uso" && idUtentePrima.HasValue)
+            {
+                var utentePrima = await _context.Utenti.FirstOrDefaultAsync(item => item.UtenteID == idUtentePrima.Value);
+                if (utentePrima != null)
+                {
+                    FermaGuidaUtente(utentePrima);
+                }
+            }
+
+            if (statoDopo == "in uso" && idUtenteDopo.HasValue)
+            {
+                var utenteDopo = await _context.Utenti.FirstOrDefaultAsync(item => item.UtenteID == idUtenteDopo.Value);
+                if (utenteDopo != null)
+                {
+                    AvviaGuidaUtente(utenteDopo);
+                }
+            }
+        }
+
+        private async Task FermaGuidaSeVeicoloEraInUsoAsync(Veicolo veicolo)
+        {
+            var stato = StatoPerVista(veicolo.Stato);
+            if (stato != "in uso" || !veicolo.UtentePrenotatoID.HasValue)
+            {
+                return;
+            }
+
+            var utente = await _context.Utenti.FirstOrDefaultAsync(item => item.UtenteID == veicolo.UtentePrenotatoID.Value);
+            if (utente != null)
+            {
+                FermaGuidaUtente(utente);
+            }
+        }
+
+        private static void FermaGuidaUtente(Utente utente)
+        {
+            if (utente.InizioGuidaUnix.HasValue)
+            {
+                var unixAdesso = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                var secondiGuidati = unixAdesso - utente.InizioGuidaUnix.Value;
+
+                if (secondiGuidati > 0)
+                {
+                    utente.TempoGuidaSecondi += secondiGuidati;
+                }
+            }
+
+            utente.InizioGuidaUnix = null;
+        }
+
+        private static void AvviaGuidaUtente(Utente utente)
+        {
+            if (!utente.InizioGuidaUnix.HasValue)
+            {
+                utente.InizioGuidaUnix = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             }
         }
 
