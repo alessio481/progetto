@@ -26,17 +26,7 @@ namespace FleetManager.Models.ViewModels
         {
             get
             {
-                var totale = 0;
-
-                foreach (var veicolo in SchedeVeicoli)
-                {
-                    if (veicolo.Stato == "in uso")
-                    {
-                        totale++;
-                    }
-                }
-
-                return totale;
+                return SchedeVeicoli.Count(veicolo => veicolo.Stato == "in uso");
             }
         }
 
@@ -44,17 +34,7 @@ namespace FleetManager.Models.ViewModels
         {
             get
             {
-                var totale = 0;
-
-                foreach (var veicolo in SchedeVeicoli)
-                {
-                    if (veicolo.Stato.Contains("manutenzione"))
-                    {
-                        totale++;
-                    }
-                }
-
-                return totale;
+                return SchedeVeicoli.Count(veicolo => veicolo.Stato.Contains("manutenzione"));
             }
         }
     }
@@ -71,32 +51,7 @@ namespace FleetManager.Models.ViewModels
         {
             get
             {
-                if (!string.IsNullOrWhiteSpace(Ricerca))
-                {
-                    return true;
-                }
-
-                if (Gruppo.HasValue)
-                {
-                    return true;
-                }
-
-                if (!string.IsNullOrWhiteSpace(Stato))
-                {
-                    return true;
-                }
-
-                if (!string.IsNullOrWhiteSpace(Assegnatario))
-                {
-                    return true;
-                }
-
-                if (LivelloCarburante.HasValue)
-                {
-                    return true;
-                }
-
-                return false;
+                return !string.IsNullOrWhiteSpace(Ricerca) || Gruppo.HasValue || string.IsNullOrWhiteSpace(Stato) || !string.IsNullOrWhiteSpace(Assegnatario) || LivelloCarburante.HasValue;
             }
         }
     }
@@ -149,7 +104,7 @@ namespace FleetManager.Models.ViewModels
 
         public int Gruppo { get; set; } = 1;
 
-        [Range(0, int.MaxValue)]
+        [Range(0, int.MaxValue)] //così non è negativo
         public int Chilometraggio { get; set; }
 
         [Range(0, 2)]

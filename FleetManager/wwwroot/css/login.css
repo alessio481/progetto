@@ -13,19 +13,38 @@ body {
 #loginPanel {
     width: 100%;
     max-width: 430px;
-    background: #ffffff;
+    background: #f1f4f7;
     padding: 42px 34px;
     border-radius: 2px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    border: 1px solid #d4dbe3;
+    border: 1px solid #c9d3dc;
 }
 
 .login-header {
     text-align: center;
     color: #111;
     margin-bottom: 28px;
+}
+
+.login-logo-box {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 300px;
+    padding: 18px 20px;
+    margin: 0 auto 20px;
+    background: #ffffff;
+    border: 1px solid #d2dbe4;
+}
+
+.login-logo-image {
+    display: block;
+    width: 100%;
+    max-width: 240px;
+    height: auto;
 }
 
 .login-header p {

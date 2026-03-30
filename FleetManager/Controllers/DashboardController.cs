@@ -49,7 +49,6 @@ namespace FleetManager.Controllers
             var veicoliDb = await _context.Veicoli
                 .Include(veicolo => veicolo.UtentePrenotato)
                 .OrderBy(veicolo => veicolo.Gruppo)
-                .ThenBy(veicolo => veicolo.Marca)
                 .ThenBy(veicolo => veicolo.Modello)
                 .ToListAsync();
 
@@ -177,7 +176,7 @@ namespace FleetManager.Controllers
                 IdVeicolo = veicolo.VeicoloId,
                 EAdmin = eAdmin,
                 ECreazione = false,
-                Modello = CostruisciNomeModello(veicolo),
+                Modello = veicolo.Modello,
                 Targa = veicolo.Targa,
                 IdAssegnatario = veicolo.UtentePrenotatoID,
                 Gruppo = SistemaGruppo(veicolo.Gruppo, veicolo.Tipo),
@@ -616,7 +615,7 @@ namespace FleetManager.Controllers
             return new SchedaVeicoloViewModel
             {
                 IdVeicolo = veicolo.VeicoloId,
-                Modello = CostruisciNomeModello(veicolo),
+                Modello = veicolo.Modello,
                 Targa = veicolo.Targa,
                 Stato = stato,
                 Gruppo = NomeGruppo(SistemaGruppo(veicolo.Gruppo, veicolo.Tipo)),
@@ -646,7 +645,7 @@ namespace FleetManager.Controllers
 
         private static bool RispettaFiltri(Veicolo veicolo, FiltriDashboardViewModel filtri)
         {
-            var nomeModello = PortaInMinuscolo(CostruisciNomeModello(veicolo));
+            var nomeModello = PortaInMinuscolo(veicolo.Modello);
             var nomeAssegnatario = PortaInMinuscolo(veicolo.UtentePrenotato?.NomeCompleto);
             var stato = StatoPerVista(veicolo.Stato);
             var livelloCarburante = SistemaLivelloCarburante(veicolo.LivelloCarburante);
@@ -702,12 +701,7 @@ namespace FleetManager.Controllers
             // Tutti i campi modificabili passano da qui.
             if (eAdmin)
             {
-                string marca;
-                string modello;
-                SeparaMarcaEModello(model.Modello, out marca, out modello);
-
-                veicolo.Marca = marca;
-                veicolo.Modello = modello;
+                veicolo.Modello = model.Modello.Trim();
                 veicolo.Targa = model.Targa.Trim().ToUpperInvariant();
             }
 
@@ -850,22 +844,6 @@ namespace FleetManager.Controllers
             return livelloCarburante;
         }
 
-        private static string CostruisciNomeModello(Veicolo veicolo)
-        {
-            if (string.IsNullOrWhiteSpace(veicolo.Marca))
-            {
-                return veicolo.Modello;
-            }
-
-            if (string.IsNullOrWhiteSpace(veicolo.Modello) ||
-                string.Equals(veicolo.Marca, veicolo.Modello, StringComparison.OrdinalIgnoreCase))
-            {
-                return veicolo.Marca;
-            }
-
-            return veicolo.Marca + " " + veicolo.Modello;
-        }
-
         private static int SistemaGruppo(int gruppo, string? tipo)
         {
             if (gruppo == IndiceGruppo1 || gruppo == IndiceGruppo2 || gruppo == IndiceGruppo3)
@@ -977,29 +955,6 @@ namespace FleetManager.Controllers
             }
 
             return etichetta;
-        }
-
-        private static void SeparaMarcaEModello(string testoModello, out string marca, out string modello)
-        {
-            var valorePulito = (testoModello ?? string.Empty).Trim();
-            var parti = valorePulito.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
-
-            if (parti.Length == 0)
-            {
-                marca = "Veicolo";
-                modello = "Senza modello";
-                return;
-            }
-
-            if (parti.Length == 1)
-            {
-                marca = parti[0];
-                modello = parti[0];
-                return;
-            }
-
-            marca = parti[0];
-            modello = parti[1];
         }
 
         private static string ScegliUrlImmagine(string? urlImmagine)

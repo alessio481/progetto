@@ -11,11 +11,7 @@ namespace FleetManager.Models
         public string Targa { get; set; } = string.Empty;
 
         [Required]
-        [StringLength(50)]
-        public string Marca { get; set; } = string.Empty;
-
-        [Required]
-        [StringLength(50)]
+        [StringLength(100)]
         public string Modello { get; set; } = string.Empty;
 
         [StringLength(20)]
