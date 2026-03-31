@@ -36,7 +36,7 @@
                     <details class="debug-menu">
                         <summary>Admin</summary>
                         <div class="debug-dropdown server-dropdown">
-                            <a asp-action="TempiGuidaUtenti">Tempi guida</a>
+                            <a asp-action="TempiGuidaUtenti">Vista utenze</a>
                             <a asp-action="CreaUtente">Aggiungi utente</a>
                             <a asp-action="Crea">Aggiungi auto</a>
                             <form asp-action="RipristinaDemo" method="post">
@@ -85,8 +85,14 @@
                         </select>
                     </div>
                     <div class="search-field">
-                        <label asp-for="FiltriRicerca.Assegnatario">Assegnatario</label>
-                        <input asp-for="FiltriRicerca.Assegnatario" placeholder="Nome assegnatario" />
+                        <label asp-for="FiltriRicerca.IdAssegnatario">Assegnatario</label>
+                        <select asp-for="FiltriRicerca.IdAssegnatario">
+                            <option value="">Tutti gli assegnatari</option>
+                            @foreach (var opzione in Model.FiltriRicerca.OpzioniAssegnatario)
+                            {
+                                <option value="@opzione.Valore">@opzione.Testo</option>
+                            }
+                        </select>
                     </div>
                     <div class="search-field">
                         <label asp-for="FiltriRicerca.LivelloCarburante">Carburante</label>

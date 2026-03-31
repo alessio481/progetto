@@ -44,8 +44,9 @@ namespace FleetManager.Models.ViewModels
         public string? Ricerca { get; set; }
         public int? Gruppo { get; set; }
         public string? Stato { get; set; }
-        public string? Assegnatario { get; set; }
+        public int? IdAssegnatario { get; set; }
         public int? LivelloCarburante { get; set; }
+        public List<OpzioneSelectViewModel> OpzioniAssegnatario { get; set; } = new();
 
         public bool CiSonoFiltriAttivi
         {
@@ -54,7 +55,7 @@ namespace FleetManager.Models.ViewModels
                 return !string.IsNullOrWhiteSpace(Ricerca) ||
                        Gruppo.HasValue ||
                        !string.IsNullOrWhiteSpace(Stato) ||
-                       !string.IsNullOrWhiteSpace(Assegnatario) ||
+                       IdAssegnatario.HasValue ||
                        LivelloCarburante.HasValue;
             }
         }

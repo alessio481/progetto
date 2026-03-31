@@ -46,6 +46,11 @@ namespace FleetManager.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            var utentiFiltro = await _context.Utenti
+                .OrderBy(utente => utente.Cognome)
+                .ThenBy(utente => utente.Nome)
+                .ToListAsync();
+
             var veicoliDb = await _context.Veicoli
                 .Include(veicolo => veicolo.UtentePrenotato)
                 .OrderBy(veicolo => veicolo.Gruppo)
@@ -63,6 +68,20 @@ namespace FleetManager.Controllers
                 InizioGuidaUnix = utenteCorrente.InizioGuidaUnix,
                 FiltriRicerca = filtriRicerca
             };
+
+            foreach (var utente in utentiFiltro)
+            {
+                if (string.Equals(utente.Ruolo, "Admin", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                model.FiltriRicerca.OpzioniAssegnatario.Add(new OpzioneSelectViewModel
+                {
+                    Valore = utente.UtenteID.ToString(),
+                    Testo = utente.NomeCompleto
+                });
+            }
 
             var elencoVeicoli = new List<SchedaVeicoloViewModel>();
 
@@ -682,8 +701,8 @@ namespace FleetManager.Controllers
                 return false;
             }
 
-            if (!string.IsNullOrWhiteSpace(filtri.Assegnatario) &&
-                !nomeAssegnatario.Contains(PortaInMinuscolo(filtri.Assegnatario)))
+            if (filtri.IdAssegnatario.HasValue &&
+                veicolo.UtentePrenotatoID != filtri.IdAssegnatario.Value)
             {
                 return false;
             }
