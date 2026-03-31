@@ -230,45 +230,45 @@ namespace FleetManager.Controllers
 
             if (nomePulito.Length < 2)
             {
-                ModelState.AddModelError(string.Empty, "Il nome deve avere almeno 2 caratteri.");
+                ModelState.AddModelError(nameof(model.Nome), "Il nome deve avere almeno 2 caratteri.");
                 return View("EditUtente", model);
             }
 
             if (cognomePulito.Length < 2)
             {
-                ModelState.AddModelError(string.Empty, "Il cognome deve avere almeno 2 caratteri.");
+                ModelState.AddModelError(nameof(model.Cognome), "Il cognome deve avere almeno 2 caratteri.");
                 return View("EditUtente", model);
             }
 
             if (passwordPulita.Length < 5)
             {
-                ModelState.AddModelError(string.Empty, "La password deve avere almeno 5 caratteri.");
+                ModelState.AddModelError(nameof(model.Password), "La password deve avere almeno 5 caratteri.");
                 return View("EditUtente", model);
             }
 
             var utenteEsistente = await _context.Utenti.FirstOrDefaultAsync(item => item.Email == emailPulita);
             if (utenteEsistente != null)
             {
-                ModelState.AddModelError(string.Empty, "Esiste gia un utente con questa email.");
+                ModelState.AddModelError(nameof(model.Email), "Esiste gia un utente con questa email.");
                 return View("EditUtente", model);
             }
 
             if (model.DataNascita == null)
             {
-                ModelState.AddModelError(string.Empty, "Inserisci una data di nascita.");
+                ModelState.AddModelError(nameof(model.DataNascita), "Inserisci una data di nascita.");
                 return View("EditUtente", model);
             }
 
             var dataNascita = model.DataNascita.Value.Date;
             if (dataNascita > DateTime.Today)
             {
-                ModelState.AddModelError(string.Empty, "La data di nascita non puo essere nel futuro.");
+                ModelState.AddModelError(nameof(model.DataNascita), "La data di nascita non puo essere nel futuro.");
                 return View("EditUtente", model);
             }
 
             if (dataNascita < DateTime.Today.AddYears(-100))
             {
-                ModelState.AddModelError(string.Empty, "La data di nascita e troppo lontana.");
+                ModelState.AddModelError(nameof(model.DataNascita), "La data di nascita e troppo lontana.");
                 return View("EditUtente", model);
             }
 

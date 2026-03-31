@@ -138,23 +138,22 @@ namespace FleetManager.Models.ViewModels
 
     public class FormUtenteViewModel
     {
-        [Required]
+        [Required(ErrorMessage = "Inserisci il nome.")]
         public string Nome { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Inserisci il cognome.")]
         public string Cognome { get; set; } = string.Empty;
 
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "Inserisci l'email.")]
+        [EmailAddress(ErrorMessage = "Inserisci un indirizzo email valido.")]
         public string Email { get; set; } = string.Empty;
 
-        [Required]
-        [MinLength(5)]
-        
+        [Required(ErrorMessage = "Inserisci la password.")]
+        [MinLength(5, ErrorMessage = "La password deve avere almeno 5 caratteri.")]
         public string Password { get; set; } = string.Empty;
 
         [DataType(DataType.Date)]
-        [Required]
+        [Required(ErrorMessage = "Inserisci la data di nascita.")]
         public DateTime? DataNascita { get; set; }
     }
 

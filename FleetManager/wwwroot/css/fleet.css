@@ -620,11 +620,15 @@ header {
     gap: 15px;
 }
 
-.validation-box {
-    padding: 12px 14px;
-    border: 1px solid #e6c9c9;
-    background: #fff7f7;
+.field-error {
+    display: block;
+    margin-top: 6px;
     color: #8b1e1e;
+    font-size: 12px;
+}
+
+.field-error.field-validation-valid {
+    display: none;
 }
 
 .events-section {

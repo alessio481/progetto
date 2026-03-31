@@ -32,28 +32,31 @@
                     <p class="edit-subtitle">L'admin inserisce i dati principali e salva.</p>
 
                     <form asp-action="SalvaUtente" method="post" class="edit-form">
-                        <div asp-validation-summary="ModelOnly" class="validation-box"></div>
-
                         <div class="form-grid">
                             <div class="modal-field">
                                 <label asp-for="Nome">Nome</label>
                                 <input asp-for="Nome" />
+                                <span asp-validation-for="Nome" class="field-error"></span>
                             </div>
                             <div class="modal-field">
                                 <label asp-for="Cognome">Cognome</label>
                                 <input asp-for="Cognome" />
+                                <span asp-validation-for="Cognome" class="field-error"></span>
                             </div>
                             <div class="modal-field">
                                 <label asp-for="Email">Email</label>
                                 <input asp-for="Email" />
+                                <span asp-validation-for="Email" class="field-error"></span>
                             </div>
                             <div class="modal-field">
                                 <label asp-for="Password">Password</label>
-                                <input asp-for="Password" />
+                                <input asp-for="Password" type="password" />
+                                <span asp-validation-for="Password" class="field-error"></span>
                             </div>
                             <div class="modal-field">
                                 <label asp-for="DataNascita">Data di nascita</label>
                                 <input asp-for="DataNascita" type="date" />
+                                <span asp-validation-for="DataNascita" class="field-error"></span>
                             </div>
                         </div>
 

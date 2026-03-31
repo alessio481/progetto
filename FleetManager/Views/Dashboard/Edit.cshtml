@@ -46,8 +46,6 @@
                         <input asp-for="ECreazione" type="hidden" />
                         <input asp-for="EAdmin" type="hidden" />
 
-                        <div asp-validation-summary="ModelOnly" class="validation-box"></div>
-
                         <div class="form-grid">
                             <div class="modal-field">
                                 <label asp-for="Modello">Modello</label>
@@ -59,6 +57,7 @@
                                 {
                                     <input asp-for="Modello" readonly />
                                 }
+                                <span asp-validation-for="Modello" class="field-error"></span>
                             </div>
                             <div class="modal-field">
                                 <label asp-for="Targa">Targa</label>
@@ -70,6 +69,7 @@
                                 {
                                     <input asp-for="Targa" readonly />
                                 }
+                                <span asp-validation-for="Targa" class="field-error"></span>
                             </div>
 
                             @if (Model.EAdmin)
@@ -83,6 +83,7 @@
                                             <option value="@opzione.Valore">@opzione.Testo</option>
                                         }
                                     </select>
+                                    <span asp-validation-for="IdAssegnatario" class="field-error"></span>
                                 </div>
                                 <div class="modal-field">
                                     <label asp-for="Gruppo">Gruppo</label>
@@ -92,21 +93,24 @@
                                             <option value="@opzione.Valore">@opzione.Testo</option>
                                         }
                                     </select>
+                                    <span asp-validation-for="Gruppo" class="field-error"></span>
                                 </div>
                             }
 
                             <div class="modal-field">
                                 <label asp-for="Chilometraggio">Km attuali</label>
                                 <input asp-for="Chilometraggio" type="number" min="0" />
+                                <span asp-validation-for="Chilometraggio" class="field-error"></span>
                             </div>
                             <div class="modal-field">
                                 <label asp-for="LivelloCarburante">Livello carburante</label>
                                 <select asp-for="LivelloCarburante">
                                     @foreach (var opzione in Model.OpzioniCarburante)
                                     {
-                                        <option value="@opzione.Valore">@opzione.Testo</option>
-                                    }
-                                </select>
+                                            <option value="@opzione.Valore">@opzione.Testo</option>
+                                        }
+                                    </select>
+                                <span asp-validation-for="LivelloCarburante" class="field-error"></span>
                             </div>
                             <div class="modal-field">
                                 <label asp-for="TipoCarburante">Tipo carburante</label>
@@ -118,6 +122,7 @@
                                 {
                                     <input asp-for="TipoCarburante" readonly />
                                 }
+                                <span asp-validation-for="TipoCarburante" class="field-error"></span>
                             </div>
 
                             @if (Model.EAdmin)
@@ -130,6 +135,7 @@
                                             <option value="@opzione.Valore">@opzione.Testo</option>
                                         }
                                     </select>
+                                    <span asp-validation-for="Stato" class="field-error"></span>
                                 </div>
                             }
 
@@ -143,12 +149,14 @@
                                 {
                                     <input asp-for="DataPossesso" type="date" readonly />
                                 }
+                                <span asp-validation-for="DataPossesso" class="field-error"></span>
                             </div>
                             @if (Model.EAdmin)
                             {
                                 <div class="modal-field">
                                     <label asp-for="LinkImmagine">URL foto</label>
                                     <input asp-for="LinkImmagine" />
+                                    <span asp-validation-for="LinkImmagine" class="field-error"></span>
                                 </div>
                             }
                         </div>
@@ -159,18 +167,22 @@
                                 <div class="modal-field">
                                     <label asp-for="RevisioneInizio">Revisione inizio</label>
                                     <input asp-for="RevisioneInizio" type="date" />
+                                    <span asp-validation-for="RevisioneInizio" class="field-error"></span>
                                 </div>
                                 <div class="modal-field">
                                     <label asp-for="BolloInizio">Bollo inizio</label>
                                     <input asp-for="BolloInizio" type="date" />
+                                    <span asp-validation-for="BolloInizio" class="field-error"></span>
                                 </div>
                                 <div class="modal-field">
                                     <label asp-for="TagliandoInizio">Tagliando inizio</label>
                                     <input asp-for="TagliandoInizio" type="date" />
+                                    <span asp-validation-for="TagliandoInizio" class="field-error"></span>
                                 </div>
                                 <div class="modal-field">
                                     <label asp-for="AssicurazioneInizio">Assicurazione inizio</label>
                                     <input asp-for="AssicurazioneInizio" type="date" />
+                                    <span asp-validation-for="AssicurazioneInizio" class="field-error"></span>
                                 </div>
                             </div>
                         </section>
