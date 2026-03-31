@@ -26,7 +26,7 @@ namespace FleetManager.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index(FiltriDashboardViewModel filtri)
+        public async Task<IActionResult> Index(FiltriDashboardViewModel filtriRicerca)
         {
             // 1 leggiamo l'utente loggato
             // 2 prendiamo i veicoli dal database
@@ -61,7 +61,7 @@ namespace FleetManager.Controllers
                 MessaggioErrore = TempData["ErrorMessage"]?.ToString(),
                 TempoGuidaSecondi = utenteCorrente.TempoGuidaSecondi,
                 InizioGuidaUnix = utenteCorrente.InizioGuidaUnix,
-                FiltriRicerca = filtri
+                FiltriRicerca = filtriRicerca
             };
 
             var elencoVeicoli = new List<SchedaVeicoloViewModel>();
@@ -74,7 +74,7 @@ namespace FleetManager.Controllers
                     continue;
                 }
 
-                if (!RispettaFiltri(veicolo, filtri))
+                if (!RispettaFiltri(veicolo, filtriRicerca))
                 {
                     continue;
                 }

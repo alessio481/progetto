@@ -51,7 +51,11 @@ namespace FleetManager.Models.ViewModels
         {
             get
             {
-                return !string.IsNullOrWhiteSpace(Ricerca) || Gruppo.HasValue || string.IsNullOrWhiteSpace(Stato) || !string.IsNullOrWhiteSpace(Assegnatario) || LivelloCarburante.HasValue;
+                return !string.IsNullOrWhiteSpace(Ricerca) ||
+                       Gruppo.HasValue ||
+                       !string.IsNullOrWhiteSpace(Stato) ||
+                       !string.IsNullOrWhiteSpace(Assegnatario) ||
+                       LivelloCarburante.HasValue;
             }
         }
     }
