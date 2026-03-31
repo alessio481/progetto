@@ -34,7 +34,9 @@ namespace FleetManager.Models.ViewModels
         {
             get
             {
-                return SchedeVeicoli.Count(veicolo => veicolo.Stato.Contains("manutenzione"));
+                return SchedeVeicoli.Count(veicolo =>
+                    veicolo.Stato == "in manutenzione" ||
+                    veicolo.Stato == "in richiesta manutenzione");
             }
         }
     }
@@ -98,30 +100,44 @@ namespace FleetManager.Models.ViewModels
         public bool EAdmin { get; set; }
         public bool ECreazione { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Inserisci il modello.")]
         public string Modello { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Inserisci la targa.")]
         public string Targa { get; set; } = string.Empty;
 
         [Display(Name = "Assegnatario")]
         public int? IdAssegnatario { get; set; }
 
+        [Range(1, 3, ErrorMessage = "Seleziona un gruppo valido.")]
         public int Gruppo { get; set; } = 1;
 
-        [Range(0, int.MaxValue)] //così non è negativo
+        [Range(0, int.MaxValue, ErrorMessage = "Inserisci un chilometraggio valido.")]
         public int Chilometraggio { get; set; }
 
-        [Range(0, 2)]
+        [Range(0, 2, ErrorMessage = "Seleziona un livello carburante valido.")]
         public int LivelloCarburante { get; set; } = 2;
 
         public string? TipoCarburante { get; set; }
+
+        [Required(ErrorMessage = "Seleziona lo stato del veicolo.")]
         public string Stato { get; set; } = "non in uso";
+
+        [DataType(DataType.Date)]
         public DateTime? DataPossesso { get; set; }
+
         public string? LinkImmagine { get; set; }
+
+        [DataType(DataType.Date)]
         public DateTime? RevisioneInizio { get; set; }
+
+        [DataType(DataType.Date)]
         public DateTime? BolloInizio { get; set; }
+
+        [DataType(DataType.Date)]
         public DateTime? TagliandoInizio { get; set; }
+
+        [DataType(DataType.Date)]
         public DateTime? AssicurazioneInizio { get; set; }
 
         public List<OpzioneSelectViewModel> OpzioniAssegnatario { get; set; } = new();
