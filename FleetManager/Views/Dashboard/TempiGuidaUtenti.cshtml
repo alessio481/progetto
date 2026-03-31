@@ -2,6 +2,21 @@
 @{
     Layout = null;
     ViewData["Title"] = "Tempi Guida";
+    long totaleSecondi = 0;
+
+    foreach (var utente in Model.Utenti)
+    {
+        totaleSecondi += utente.TempoGuidaSecondi;
+
+        if (utente.InizioGuidaUnix.HasValue)
+        {
+            var secondiInCorso = DateTimeOffset.UtcNow.ToUnixTimeSeconds() - utente.InizioGuidaUnix.Value;
+            if (secondiInCorso > 0)
+            {
+                totaleSecondi += secondiInCorso;
+            }
+        }
+    }
 }
 <!DOCTYPE html>
 <html lang="it">
@@ -28,7 +43,10 @@
         <div class="container">
             <section class="users-time-panel">
                 <h1>Tempi guida utenti</h1>
-                <p class="edit-subtitle">Pagina semplice per vedere i tempi accumulati e copiare l'email.</p>
+                <p class="edit-subtitle">
+                    Tempo guida totale:
+                    <strong id="totaleTempiGuida">@FormattaSecondi(totaleSecondi)</strong>
+                </p>
 
                 <div class="users-time-list">
                     @foreach (var utente in Model.Utenti)
@@ -64,6 +82,8 @@
         function aggiornaTempiGuida() {
             const unixAdesso = Math.floor(Date.now() / 1000);
             const elementi = document.querySelectorAll(".js-drive-time");
+            const totaleElemento = document.getElementById("totaleTempiGuida");
+            let totalePagina = 0;
 
             for (const elemento of elementi) {
                 const baseSeconds = Number(elemento.dataset.baseSeconds || "0");
@@ -75,6 +95,11 @@
                 }
 
                 elemento.textContent = formattaSecondi(secondiTotali);
+                totalePagina += secondiTotali;
+            }
+
+            if (totaleElemento) {
+                totaleElemento.textContent = formattaSecondi(totalePagina);
             }
         }
 

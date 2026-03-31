@@ -319,6 +319,13 @@ namespace FleetManager.Controllers
                 return View("Edit", model);
             }
 
+            if (eAdmin && model.Stato == "in uso" && !model.IdAssegnatario.HasValue)
+            {
+                ModelState.AddModelError(nameof(model.IdAssegnatario), "Per mettere il veicolo in uso serve un assegnatario.");
+                model = await PreparaFormVeicoloAsync(model);
+                return View("Edit", model);
+            }
+
             if (model.ECreazione && !eAdmin)
             {
                 return Forbid();
