@@ -1,4 +1,4 @@
-namespace FleetManager.Models
+namespace FleetManager.Models.ViewModels
 {
     public class ErroreViewModel
     {

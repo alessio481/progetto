@@ -1,4 +1,4 @@
-using FleetManager.Models;
+using FleetManager.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FleetManager.Controllers

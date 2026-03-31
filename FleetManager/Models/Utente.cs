@@ -27,7 +27,6 @@ namespace FleetManager.Models
         [DataType(DataType.Date)]
         public DateTime DataNascita { get; set; }
 
-        // Nel progetto usiamo solo due ruoli: Admin e Driver.
         [Required]
         [Display(Name = "Ruolo")]
         public string Ruolo { get; set; } = "Driver";
@@ -35,13 +34,12 @@ namespace FleetManager.Models
         [Display(Name = "Data Registrazione")]
         public DateTime DataRegistrazione { get; set; } = DateTime.Now;
 
-        // Tempo totale di guida accumulato, espresso in secondi.
+        //in secondi
         public long TempoGuidaSecondi { get; set; }
 
-        // Quando l'utente inizia a guidare salviamo l'istante corrente in formato unix.
+        // quando l'utente comincia a guidare salviamo il tempo unix di inizio
         public long? InizioGuidaUnix { get; set; }
 
-        // Evitiamo di scrivere Nome + Cognome ogni volta nelle view.
         [Display(Name = "Nome Completo")]
         public string NomeCompleto
         {

@@ -95,7 +95,7 @@ namespace FleetManager.Models.ViewModels
 
     public class FormVeicoloViewModel
     {
-        // Questo model serve sia per la creazione sia per la modifica.
+        // questo modello fa sia la creazione che la modifica
         public int? IdVeicolo { get; set; }
         public bool EAdmin { get; set; }
         public bool ECreazione { get; set; }

@@ -16,7 +16,7 @@ namespace FleetManager.Controllers
         private const string Gruppo1 = "FONDAZIONE SETTORE-1";
         private const string Gruppo2 = "FONDAZIONE SETTORE-2";
         private const string Gruppo3 = "FONDAZIONE SETTORE-3";
-        private const string UrlImmagineBase = "https://via.placeholder.com/400x250";
+        private const string UrlImmagineBase = "https://via.placeholder.com/400x250"; //se non c'è un immagine si usa questo
 
         private readonly ApplicationDbContext _context;
 
@@ -28,9 +28,9 @@ namespace FleetManager.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(FiltriDashboardViewModel filtriRicerca)
         {
-            // 1 leggiamo l'utente loggato
-            // 2 prendiamo i veicoli dal database
-            // 3 prepariamo le schede da mostrare nella view
+            // leggiamo l'utente loggato
+            // prendiamo i veicoli dal db
+            // e prepariamo le schede da mostrare nella view
             var idUtenteCorrente = OttieniIdUtenteCorrente();
             if (idUtenteCorrente == null)
             {
@@ -292,7 +292,7 @@ namespace FleetManager.Controllers
             }
             catch
             {
-                ModelState.AddModelError(string.Empty, "Errore durante il salvataggio dell'utente.");
+                ModelState.AddModelError(nameof(model.Email), "Errore durante il salvataggio dell'utente.");
                 return View("EditUtente", model);
             }
 
@@ -407,6 +407,12 @@ namespace FleetManager.Controllers
 
             var statoAttuale = StatoPerVista(veicolo.Stato);
 
+            if (statoAttuale == "in manutenzione" || statoAttuale == "in richiesta manutenzione")
+            {
+                TempData["ErrorMessage"] = "Questo veicolo non puo essere usato nello stato attuale.";
+                return RedirectToAction(nameof(Index));
+            }
+
             if (statoAttuale == "in uso")
             {
                 veicolo.Stato = "Disponibile";
@@ -472,6 +478,7 @@ namespace FleetManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            await FermaGuidaSeVeicoloEraInUsoAsync(veicolo);
             veicolo.Stato = "Manutenzione";
             veicolo.DataAggiornamento = DateTime.Now;
             await _context.SaveChangesAsync();
@@ -531,6 +538,15 @@ namespace FleetManager.Controllers
         [HttpPost]
         public async Task<IActionResult> SvuotaDatiDemo()
         {
+            var utentiConGuidaAperta = await _context.Utenti
+                .Where(utente => utente.InizioGuidaUnix != null)
+                .ToListAsync();
+
+            foreach (var utente in utentiConGuidaAperta)
+            {
+                utente.InizioGuidaUnix = null;
+            }
+
             _context.Veicoli.RemoveRange(_context.Veicoli);
             await _context.SaveChangesAsync();
 

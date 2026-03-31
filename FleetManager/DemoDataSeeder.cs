@@ -5,7 +5,7 @@ namespace FleetManager;
 
 public static class DemoDataSeeder
 {
-    // Se il database e vuoto, carichiamo un piccolo dataset demo.
+    // Se il database e vuoto, carichiamo dei dati di prova.
     public static async Task PreparaDatabaseDemoAsync(ApplicationDbContext context)
     {
         await context.Database.EnsureCreatedAsync();
@@ -19,7 +19,7 @@ public static class DemoDataSeeder
         await RipristinaDatiDemoAsync(context);
     }
 
-    // Svuota i dati attuali e ricarica gli utenti e i veicoli demo.
+    // Svuota i dati attuali e ricarica gli utenti e i veicoli di prova.
     public static async Task<int> RipristinaDatiDemoAsync(ApplicationDbContext context)
     {
         context.Veicoli.RemoveRange(context.Veicoli);

@@ -4,7 +4,7 @@ namespace FleetManager.Models.ViewModels
 {
     public class LoginUtenteViewModel
     {
-        // ViewModel molto semplice per la pagina di login.
+        // si potrebbe mettere insieme agli altri, ma meglio separato per ordine
         [Required]
         [EmailAddress]
         [Display(Name = "Email")]
